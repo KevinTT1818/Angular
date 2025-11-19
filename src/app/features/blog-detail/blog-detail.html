@@ -1,0 +1,238 @@
+<div class="blog-detail-container">
+  @if (isLoading()) {
+    <!-- 加载状态 -->
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>加载中...</p>
+    </div>
+  } @else if (blog()) {
+    <!-- 博客内容 -->
+    <article class="blog-article">
+      <!-- 头部信息 -->
+      <header class="blog-header">
+        <div class="container">
+          <!-- 面包屑导航 -->
+          <nav class="breadcrumb">
+            <a routerLink="/blogs">博客首页</a>
+            <span>/</span>
+            <a [routerLink]="['/blogs']" [queryParams]="{category: blog()!.categoryId}">
+              {{ blog()!.category.name }}
+            </a>
+            <span>/</span>
+            <span>{{ blog()!.title }}</span>
+          </nav>
+          
+          <!-- 标题 -->
+          <h1 class="article-title">{{ blog()!.title }}</h1>
+          
+          <!-- 元信息 -->
+          <div class="article-meta">
+            <div class="author-info">
+              @if (blog()!.authorAvatar) {
+                <img [src]="blog()!.authorAvatar" [alt]="blog()!.author" class="avatar">
+              }
+              <div>
+                <div class="author-name">{{ blog()!.author }}</div>
+                <div class="publish-date">
+                  发布于 {{ blog()!.publishedAt | dateFormat }}
+                  @if (blog()!.updatedAt > blog()!.publishedAt) {
+                    · 更新于 {{ blog()!.updatedAt | dateFormat }}
+                  }
+                </div>
+              </div>
+            </div>
+            
+            <div class="article-stats">
+              <span title="浏览量">👁️ {{ blog()!.viewCount }}</span>
+              <span title="点赞数">❤️ {{ blog()!.likeCount }}</span>
+              <span title="评论数">💬 {{ blog()!.commentCount }}</span>
+            </div>
+          </div>
+          
+          <!-- 标签 -->
+          <div class="article-tags">
+            @for (tag of blog()!.tags; track tag) {
+              <span class="tag">#{{ tag }}</span>
+            }
+          </div>
+        </div>
+      </header>
+      
+      <!-- 封面图 -->
+      @if (blog()!.coverImage) {
+        <div class="cover-image">
+          <img [src]="blog()!.coverImage" [alt]="blog()!.title">
+        </div>
+      }
+      
+      <!-- 主体内容 -->
+      <div class="container">
+        <div class="content-wrapper">
+          <!-- 左侧目录 -->
+          @if (tocItems().length > 0) {
+            <aside class="toc-sidebar">
+              <div class="toc-container">
+                <h3>目录</h3>
+                <nav class="toc-nav">
+                  @for (item of tocItems(); track item.id) {
+                    <a 
+                      (click)="scrollToSection(item.id)"
+                      [class.active]="activeSection() === item.id"
+                      [style.padding-left.px]="(item.level - 1) * 16"
+                      class="toc-link">
+                      {{ item.text }}
+                    </a>
+                  }
+                </nav>
+              </div>
+            </aside>
+          }
+          
+          <!-- 文章内容 -->
+          <div class="article-content">
+            <markdown 
+              [data]="blog()!.content"
+              class="markdown-body">
+            </markdown>
+            
+            <!-- 底部操作栏 -->
+            <div class="article-actions">
+              <button 
+                (click)="toggleLike()"
+                [class.liked]="isLiked()"
+                class="action-btn like-btn">
+                {{ isLiked() ? '❤️' : '🤍' }} 
+                {{ isLiked() ? '已赞' : '点赞' }} 
+                ({{ blog()!.likeCount }})
+              </button>
+              
+              <button (click)="toggleCommentForm()" class="action-btn">
+                💬 评论 ({{ blog()!.commentCount }})
+              </button>
+              
+              <div class="share-dropdown">
+                <button class="action-btn">🔗 分享</button>
+                <div class="share-menu">
+                  <button (click)="share('twitter')">Twitter</button>
+                  <button (click)="share('facebook')">Facebook</button>
+                  <button (click)="share('linkedin')">LinkedIn</button>
+                  <button (click)="share('weibo')">微博</button>
+                  <button (click)="copyLink()">复制链接</button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 评论表单 -->
+            @if (showCommentForm()) {
+              <div class="comment-form-container">
+                <h3>发表评论</h3>
+                <form [formGroup]="commentForm" (ngSubmit)="submitComment()">
+                  <div class="form-row">
+                    <div class="form-group">
+                      <input 
+                        type="text" 
+                        formControlName="author"
+                        placeholder="姓名 *"
+                        class="form-control">
+                      @if (commentForm.get('author')?.invalid && commentForm.get('author')?.touched) {
+                        <span class="error">请输入姓名</span>
+                      }
+                    </div>
+                    
+                    <div class="form-group">
+                      <input 
+                        type="email" 
+                        formControlName="email"
+                        placeholder="邮箱 *"
+                        class="form-control">
+                      @if (commentForm.get('email')?.invalid && commentForm.get('email')?.touched) {
+                        <span class="error">请输入有效的邮箱</span>
+                      }
+                    </div>
+                  </div>
+                  
+                  <div class="form-group">
+                    <textarea 
+                      formControlName="content"
+                      placeholder="写下你的评论..."
+                      rows="5"
+                      class="form-control"></textarea>
+                    @if (commentForm.get('content')?.invalid && commentForm.get('content')?.touched) {
+                      <span class="error">评论内容至少5个字符</span>
+                    }
+                  </div>
+                  
+                  <div class="form-actions">
+                    <button 
+                      type="button"
+                      (click)="showCommentForm.set(false)"
+                      class="btn btn-secondary">
+                      取消
+                    </button>
+                    <button 
+                      type="submit"
+                      [disabled]="commentForm.invalid || isSubmittingComment()"
+                      class="btn btn-primary">
+                      {{ isSubmittingComment() ? '提交中...' : '发表评论' }}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            }
+            
+            <!-- 评论列表 -->
+            @if (comments().length > 0) {
+              <div class="comments-section">
+                <h3>评论 ({{ comments().length }})</h3>
+                @for (comment of comments(); track comment.id) {
+                  <div class="comment-item">
+                    <div class="comment-header">
+                      <span class="comment-author">{{ comment.author }}</span>
+                      <span class="comment-date">{{ comment.createdAt | dateFormat }}</span>
+                    </div>
+                    <div class="comment-content">{{ comment.content }}</div>
+                    
+                    <!-- 回复 -->
+                    @if (comment.replies && comment.replies.length > 0) {
+                      <div class="comment-replies">
+                        @for (reply of comment.replies; track reply.id) {
+                          <div class="comment-item reply">
+                            <div class="comment-header">
+                              <span class="comment-author">{{ reply.author }}</span>
+                              <span class="comment-date">{{ reply.createdAt | dateFormat }}</span>
+                            </div>
+                            <div class="comment-content">{{ reply.content }}</div>
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            }
+            
+            <!-- 相关文章 -->
+            @if (relatedBlogs().length > 0) {
+              <div class="related-blogs">
+                <h3>相关文章</h3>
+                <div class="related-grid">
+                  @for (relatedBlog of relatedBlogs(); track relatedBlog.id) {
+                    <div class="related-card" (click)="goToBlog(relatedBlog.id)">
+                      @if (relatedBlog.coverImage) {
+                        <img [src]="relatedBlog.coverImage" [alt]="relatedBlog.title">
+                      }
+                      <div class="related-info">
+                        <h4>{{ relatedBlog.title }}</h4>
+                        <p>{{ relatedBlog.excerpt | slice:0:80 }}...</p>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </article>
+  }
+</div>

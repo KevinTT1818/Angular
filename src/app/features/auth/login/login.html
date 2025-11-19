@@ -1,0 +1,173 @@
+<div class="login-container">
+  <div class="login-card">
+    <!-- 左侧：品牌介绍 -->
+    <div class="login-brand">
+      <div class="brand-content">
+        <div class="logo">
+          <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
+            <rect width="60" height="60" rx="15" fill="url(#gradientLogo)"/>
+            <path d="M30 15L37.5 26.25H22.5L30 15Z" fill="white"/>
+            <rect x="22.5" y="30" width="15" height="15" rx="3" fill="white"/>
+            <defs>
+              <linearGradient id="gradientLogo" x1="0" y1="0" x2="60" y2="60">
+                <stop offset="0%" stop-color="#667eea"/>
+                <stop offset="100%" stop-color="#764ba2"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <h1>欢迎回来</h1>
+        <p class="brand-description">登录以访问你的博客管理系统</p>
+
+        <div class="brand-features">
+          <div class="feature-item">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M16.5 6L7.5 15L3.5 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>强大的内容管理</span>
+          </div>
+          <div class="feature-item">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M16.5 6L7.5 15L3.5 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>实时数据统计</span>
+          </div>
+          <div class="feature-item">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M16.5 6L7.5 15L3.5 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>简洁优雅的界面</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右侧：登录表单 -->
+    <div class="login-form-section">
+      <div class="form-container">
+        <h2>登录账户</h2>
+        <p class="form-subtitle">请输入你的登录信息</p>
+
+        <!-- 错误提示 -->
+        @if (errorMessage()) {
+          <div class="error-alert">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M8 1L1 14h14L8 1z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              <path d="M8 6v3M8 11h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            {{ errorMessage() }}
+          </div>
+        }
+
+        <!-- 登录表单 -->
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+          <!-- 邮箱输入 -->
+          <div class="form-group">
+            <label for="email" class="form-label">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M2 3h12v10H2V3z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                <path d="M2 3l6 5 6-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              邮箱地址
+            </label>
+            <input
+              id="email"
+              type="email"
+              class="form-input"
+              [class.error]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
+              formControlName="email"
+              placeholder="your@email.com"
+              autocomplete="email"
+            />
+            @if (getErrorMessage('email')) {
+              <span class="error-message">{{ getErrorMessage('email') }}</span>
+            }
+          </div>
+
+          <!-- 密码输入 -->
+          <div class="form-group">
+            <label for="password" class="form-label">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <rect x="3" y="7" width="10" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M5 7V5a3 3 0 016 0v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+              密码
+            </label>
+            <div class="password-input-wrapper">
+              <input
+                id="password"
+                [type]="showPassword() ? 'text' : 'password'"
+                class="form-input"
+                [class.error]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+                formControlName="password"
+                placeholder="••••••••"
+                autocomplete="current-password"
+              />
+              <button
+                type="button"
+                class="toggle-password"
+                (click)="togglePasswordVisibility()"
+                [attr.aria-label]="showPassword() ? '隐藏密码' : '显示密码'">
+                @if (showPassword()) {
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M1 10s3-7 9-7 9 7 9 7-3 7-9 7-9-7-9-7z" stroke="currentColor" stroke-width="1.5"/>
+                    <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.5"/>
+                  </svg>
+                } @else {
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path d="M14.5 14.5L5.5 5.5M1 10s3-7 9-7c1.6 0 3.1.5 4.5 1.3M19 10s-1.3 3-3.5 4.7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M10 13a3 3 0 01-3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                  </svg>
+                }
+              </button>
+            </div>
+            @if (getErrorMessage('password')) {
+              <span class="error-message">{{ getErrorMessage('password') }}</span>
+            }
+          </div>
+
+          <!-- 记住我 & 忘记密码 -->
+          <div class="form-options">
+            <label class="checkbox-label">
+              <input type="checkbox" formControlName="rememberMe">
+              <span>记住我</span>
+            </label>
+            <a href="#" class="forgot-password" (click)="$event.preventDefault()">忘记密码？</a>
+          </div>
+
+          <!-- 登录按钮 -->
+          <button
+            type="submit"
+            class="submit-btn"
+            [class.loading]="isLoading()"
+            [disabled]="isLoading()">
+            @if (isLoading()) {
+              <span class="spinner"></span>
+              登录中...
+            } @else {
+              登录
+            }
+          </button>
+
+          <!-- 演示登录按钮 -->
+          <button
+            type="button"
+            class="demo-btn"
+            (click)="demoLogin()"
+            [disabled]="isLoading()">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M8 1v6l4-3-4-3zM2 8h6L5 4 2 8zM8 15V9l4 3-4 3zM14 8H8l3 4 3-4z" fill="currentColor"/>
+            </svg>
+            演示登录
+          </button>
+        </form>
+
+        <!-- 注册链接 -->
+        <div class="signup-link">
+          还没有账户？
+          <a routerLink="/register">立即注册</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

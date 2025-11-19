@@ -1,0 +1,93 @@
+<div class="home-container">
+  <!-- Hero区域 -->
+  <section class="hero">
+    <div class="container">
+      <h1 class="hero-title">欢迎来到我的博客</h1>
+      <p class="hero-subtitle">分享技术知识，记录成长历程</p>
+      <div class="hero-actions">
+        <a routerLink="/blogs" class="btn btn-primary">浏览文章</a>
+        <a routerLink="/about" class="btn btn-secondary">关于我</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 最新文章 - 轮播图 -->
+  <section class="latest-posts">
+    <div class="container">
+      <h2 class="section-title">最新文章</h2>
+
+      @if (isLoading()) {
+        <div class="loading">加载中...</div>
+      } @else {
+        <div class="carousel-wrapper">
+          <swiper-container
+            #swiperContainer
+            [slidesPerView]="1"
+            [spaceBetween]="30"
+            [loop]="false"
+            [rewind]="true"
+            [autoplay]="swiperConfig.autoplay"
+            [pagination]="swiperConfig.pagination"
+            [navigation]="true"
+            [breakpoints]="swiperConfig.breakpoints"
+            class="blog-carousel">
+            @for (blog of latestBlogs(); track blog.id) {
+              <swiper-slide>
+                <article class="blog-card" [routerLink]="['/blog', blog.id]">
+                  @if (blog.coverImage) {
+                    <div class="card-image-wrapper">
+                      <img
+                        [src]="blog.coverImage"
+                        [alt]="blog.title"
+                        (error)="onImageError($event)"
+                        class="card-image"
+                        loading="lazy">
+                      <div class="image-overlay"></div>
+                    </div>
+                  }
+                  <div class="card-content">
+                    <span class="category">{{ blog.category.name }}</span>
+                    <h3>{{ blog.title }}</h3>
+                    <p>{{ blog.excerpt }}</p>
+                    <div class="card-meta">
+                      <span>📅 {{ blog.publishedAt | date:'yyyy-MM-dd' }}</span>
+                      <span>👁️ {{ blog.viewCount }}</span>
+                      <span>❤️ {{ blog.likeCount }}</span>
+                    </div>
+                  </div>
+                </article>
+              </swiper-slide>
+            }
+          </swiper-container>
+        </div>
+      }
+
+      <div class="text-center">
+        <a routerLink="/blogs" class="btn btn-outline">查看更多</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 特色区域 -->
+  <section class="features">
+    <div class="container">
+      <div class="feature-grid">
+        <div class="feature-item">
+          <div class="feature-icon">📝</div>
+          <h3>技术分享</h3>
+          <p>分享前端、后端、DevOps等技术文章</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">💡</div>
+          <h3>项目实战</h3>
+          <p>记录实际项目开发经验和解决方案</p>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon">🚀</div>
+          <h3>持续学习</h3>
+          <p>保持学习热情，不断提升技术能力</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

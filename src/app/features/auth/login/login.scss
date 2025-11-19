@@ -1,0 +1,431 @@
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+
+  // 背景装饰
+  &::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    animation: pulse 8s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.1); opacity: 0.3; }
+  }
+
+  .login-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    max-width: 1000px;
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+
+    @media (max-width: 968px) {
+      grid-template-columns: 1fr;
+    }
+
+    // 左侧品牌区域
+    .login-brand {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 60px 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        opacity: 0.1;
+      }
+
+      @media (max-width: 968px) {
+        padding: 40px 30px;
+      }
+
+      .brand-content {
+        position: relative;
+        z-index: 1;
+
+        .logo {
+          margin-bottom: 30px;
+          animation: fadeInDown 0.6s ease;
+
+          svg {
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+          }
+        }
+
+        h1 {
+          font-size: 2.5rem;
+          margin: 0 0 15px;
+          font-weight: 700;
+          animation: fadeInDown 0.6s ease 0.1s both;
+
+          @media (max-width: 968px) {
+            font-size: 2rem;
+          }
+        }
+
+        .brand-description {
+          font-size: 1.1rem;
+          opacity: 0.9;
+          margin-bottom: 40px;
+          animation: fadeInDown 0.6s ease 0.2s both;
+        }
+
+        .brand-features {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+
+          .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1rem;
+            opacity: 0.95;
+            animation: fadeInLeft 0.6s ease both;
+
+            &:nth-child(1) { animation-delay: 0.3s; }
+            &:nth-child(2) { animation-delay: 0.4s; }
+            &:nth-child(3) { animation-delay: 0.5s; }
+
+            svg {
+              flex-shrink: 0;
+              background: rgba(255, 255, 255, 0.2);
+              border-radius: 50%;
+              padding: 4px;
+            }
+          }
+        }
+      }
+    }
+
+    // 右侧表单区域
+    .login-form-section {
+      padding: 60px 50px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+
+      @media (max-width: 968px) {
+        padding: 40px 30px;
+      }
+
+      .form-container {
+        animation: fadeInUp 0.6s ease;
+
+        h2 {
+          font-size: 2rem;
+          color: #333;
+          margin: 0 0 10px;
+          font-weight: 700;
+        }
+
+        .form-subtitle {
+          color: #666;
+          margin-bottom: 30px;
+          font-size: 0.95rem;
+        }
+
+        .error-alert {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 12px 16px;
+          background: #fee;
+          border: 1px solid #fcc;
+          border-radius: 8px;
+          color: #c33;
+          margin-bottom: 20px;
+          font-size: 0.9rem;
+          animation: shake 0.5s ease;
+
+          svg {
+            flex-shrink: 0;
+          }
+        }
+
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-5px); }
+          75% { transform: translateX(5px); }
+        }
+
+        form {
+          .form-group {
+            margin-bottom: 20px;
+
+            .form-label {
+              display: flex;
+              align-items: center;
+              gap: 6px;
+              font-weight: 500;
+              color: #333;
+              margin-bottom: 8px;
+              font-size: 0.9rem;
+
+              svg {
+                color: #667eea;
+              }
+            }
+
+            .form-input {
+              width: 100%;
+              padding: 12px 16px;
+              border: 2px solid #e0e0e0;
+              border-radius: 10px;
+              font-size: 1rem;
+              transition: all 0.3s;
+              outline: none;
+
+              &:focus {
+                border-color: #667eea;
+                box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+              }
+
+              &.error {
+                border-color: #e74c3c;
+              }
+
+              &::placeholder {
+                color: #999;
+              }
+            }
+
+            .password-input-wrapper {
+              position: relative;
+
+              .form-input {
+                width: 92%;
+                padding-right: 45px;
+              }
+
+              .toggle-password {
+                position: absolute;
+                right: 12px;
+                top: 50%;
+                transform: translateY(-50%);
+                background: none;
+                border: none;
+                color: #999;
+                cursor: pointer;
+                padding: 4px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: color 0.2s;
+
+                &:hover {
+                  color: #667eea;
+                }
+
+                svg {
+                  display: block;
+                }
+              }
+            }
+
+            .error-message {
+              display: block;
+              color: #e74c3c;
+              font-size: 0.85rem;
+              margin-top: 6px;
+            }
+          }
+
+          .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+
+            .checkbox-label {
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              cursor: pointer;
+              font-size: 0.9rem;
+              color: #666;
+
+              input[type="checkbox"] {
+                width: 18px;
+                height: 18px;
+                cursor: pointer;
+              }
+            }
+
+            .forgot-password {
+              color: #667eea;
+              text-decoration: none;
+              font-size: 0.9rem;
+              font-weight: 500;
+              transition: color 0.2s;
+
+              &:hover {
+                color: #764ba2;
+              }
+            }
+          }
+
+          .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+
+            &:hover:not(:disabled) {
+              transform: translateY(-2px);
+              box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+            }
+
+            &:active:not(:disabled) {
+              transform: translateY(0);
+            }
+
+            &:disabled {
+              opacity: 0.7;
+              cursor: not-allowed;
+            }
+
+            &.loading {
+              pointer-events: none;
+            }
+
+            .spinner {
+              width: 16px;
+              height: 16px;
+              border: 2px solid rgba(255, 255, 255, 0.3);
+              border-top-color: white;
+              border-radius: 50%;
+              animation: spin 0.8s linear infinite;
+            }
+
+            @keyframes spin {
+              to { transform: rotate(360deg); }
+            }
+          }
+
+          .demo-btn {
+            width: 100%;
+            padding: 12px;
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+
+            &:hover:not(:disabled) {
+              background: #667eea;
+              color: white;
+            }
+
+            &:disabled {
+              opacity: 0.5;
+              cursor: not-allowed;
+            }
+
+            svg {
+              display: block;
+            }
+          }
+        }
+
+        .signup-link {
+          text-align: center;
+          margin-top: 25px;
+          color: #666;
+          font-size: 0.95rem;
+
+          a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+
+            &:hover {
+              color: #764ba2;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // 动画
+  @keyframes fadeInDown {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeInLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+}

@@ -1,0 +1,205 @@
+<div class="editor-container">
+  <!-- 工具栏 -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <button (click)="insertMarkdown('bold')" title="粗体">
+        <i class="icon-bold">B</i>
+      </button>
+      <button (click)="insertMarkdown('italic')" title="斜体">
+        <i class="icon-italic">I</i>
+      </button>
+      <button (click)="insertMarkdown('heading')" title="标题">
+        H
+      </button>
+      <button (click)="insertMarkdown('link')" title="链接">
+        🔗
+      </button>
+      <button (click)="insertMarkdown('image')" title="图片">
+        🖼️
+      </button>
+      <button (click)="insertMarkdown('code')" title="代码">
+        &lt;/&gt;
+      </button>
+      <button (click)="insertMarkdown('code-block')" title="代码块">
+        📝
+      </button>
+      <button (click)="insertMarkdown('quote')" title="引用">
+        "
+      </button>
+      <button (click)="insertMarkdown('list')" title="列表">
+        ≡
+      </button>
+      
+      <label class="upload-btn" [class.uploading]="isUploadingImage()">
+        @if (isUploadingImage()) {
+          <span class="spinner"></span>
+          上传中... {{ uploadProgress() }}%
+        } @else {
+          📤 上传图片
+        }
+        <input
+          type="file"
+          accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+          (change)="uploadImage($event)"
+          [disabled]="isUploadingImage()"
+          hidden>
+      </label>
+    </div>
+    
+    <div class="toolbar-right">
+      <button (click)="togglePreview()" [class.active]="previewMode()">
+        {{ previewMode() ? '✏️ 编辑' : '👁️ 预览' }}
+      </button>
+    </div>
+  </div>
+  
+  <!-- 编辑器主体 -->
+  <div class="editor-body">
+    <!-- 左侧：表单 -->
+    <div class="editor-form" [class.hidden]="previewMode()">
+      <form [formGroup]="blogForm">
+        <!-- 标题 -->
+        <div class="form-group">
+          <label>标题 *</label>
+          <input 
+            type="text" 
+            formControlName="title" 
+            placeholder="输入博客标题"
+            class="form-control">
+          @if (blogForm.get('title')?.invalid && blogForm.get('title')?.touched) {
+            <span class="error">标题为必填项，至少3个字符</span>
+          }
+        </div>
+        
+        <!-- Markdown内容 -->
+        <div class="form-group">
+          <label>内容 *</label>
+          <textarea 
+            formControlName="content"
+            placeholder="使用 Markdown 编写内容..."
+            rows="20"
+            class="form-control markdown-editor"></textarea>
+          @if (blogForm.get('content')?.invalid && blogForm.get('content')?.touched) {
+            <span class="error">内容不能为空</span>
+          }
+        </div>
+        
+        <!-- 摘要 -->
+        <div class="form-group">
+          <label>
+            摘要 *
+            <button type="button" (click)="generateExcerpt()" class="btn-link">
+              自动生成
+            </button>
+          </label>
+          <textarea 
+            formControlName="excerpt"
+            placeholder="博客摘要，最多200字"
+            rows="3"
+            maxlength="200"
+            class="form-control"></textarea>
+          <small>{{ blogForm.get('excerpt')?.value?.length || 0 }} / 200</small>
+        </div>
+        
+        <!-- 封面图片 -->
+        <div class="form-group">
+          <label>封面图片 URL</label>
+          <input 
+            type="text" 
+            formControlName="coverImage"
+            placeholder="https://example.com/image.jpg"
+            class="form-control">
+        </div>
+        
+        <!-- 分类 -->
+        <div class="form-group">
+          <label>分类 *</label>
+          <select formControlName="categoryId" class="form-control">
+            <option value="">选择分类</option>
+            @for (category of categories(); track category.id) {
+              <option [value]="category.id">{{ category.name }}</option>
+            }
+          </select>
+        </div>
+        
+        <!-- 标签 -->
+        <div class="form-group">
+          <label>标签（用逗号分隔）</label>
+          <input 
+            type="text" 
+            formControlName="tags"
+            placeholder="Angular, TypeScript, Web开发"
+            class="form-control">
+        </div>
+        
+        <!-- SEO设置 -->
+        <div class="seo-section">
+          <h3>SEO 优化设置</h3>
+          
+          <div class="form-group">
+            <label>SEO标题</label>
+            <input 
+              type="text" 
+              formControlName="metaTitle"
+              placeholder="留空则使用文章标题"
+              class="form-control">
+          </div>
+          
+          <div class="form-group">
+            <label>SEO描述</label>
+            <textarea 
+              formControlName="metaDescription"
+              placeholder="留空则使用文章摘要"
+              rows="2"
+              class="form-control"></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label>关键词（用逗号分隔）</label>
+            <input 
+              type="text" 
+              formControlName="metaKeywords"
+              placeholder="关键词1, 关键词2"
+              class="form-control">
+          </div>
+        </div>
+      </form>
+    </div>
+    
+    <!-- 右侧：预览 -->
+    <div class="editor-preview" [class.fullwidth]="previewMode()">
+      <div class="preview-header">
+        <h1>{{ blogForm.get('title')?.value || '预览标题' }}</h1>
+        @if (blogForm.get('excerpt')?.value) {
+          <p class="excerpt">{{ blogForm.get('excerpt')?.value }}</p>
+        }
+      </div>
+      
+      <div class="preview-content">
+        <markdown 
+          [data]="markdownContent()"
+          class="markdown-body">
+        </markdown>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 底部操作栏 -->
+  <div class="editor-footer">
+    <button 
+      type="button" 
+      (click)="saveDraft()"
+      [disabled]="isSaving()"
+      class="btn btn-secondary">
+      {{ isSaving() ? '保存中...' : '保存草稿' }}
+    </button>
+    
+    <button 
+      type="button"
+      (click)="publishBlog()"
+      [disabled]="isSaving() || blogForm.invalid"
+      class="btn btn-primary">
+      {{ isSaving() ? '发布中...' : isEditMode() ? '更新博客' : '发布博客' }}
+    </button>
+  </div>
+</div>

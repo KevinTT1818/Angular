@@ -1,0 +1,43 @@
+<div class="search-bar" [class.expanded]="isExpanded()">
+  <div class="search-container">
+    <!-- 搜索图标 -->
+    <button class="search-icon-btn" (click)="toggleExpand()" type="button">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path d="M9 17A8 8 0 1 0 9 1a8 8 0 0 0 0 16zM19 19l-4.35-4.35"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"/>
+      </svg>
+    </button>
+
+    <!-- 搜索输入框 -->
+    <input
+      type="text"
+      class="search-input visible"
+      [placeholder]="placeholder()"
+      [(ngModel)]="searchQuery"
+      (keypress)="onKeyPress($event)"
+      (focus)="isExpanded.set(true)"
+    />
+
+    <!-- 清除按钮 -->
+    @if (searchQuery()) {
+      <button class="clear-btn" (click)="onClear()" type="button">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M12 4L4 12M4 4l8 8"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"/>
+        </svg>
+      </button>
+    }
+
+    <!-- 搜索按钮 -->
+    @if (isExpanded()) {
+      <button class="search-btn" (click)="onSearch()" type="button">
+        搜索
+      </button>
+    }
+  </div>
+</div>

@@ -1,0 +1,126 @@
+<div class="blog-filter">
+  <!-- 筛选器标题栏 -->
+  <div class="filter-header" (click)="toggleExpand()">
+    <div class="filter-title">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path d="M2 4h16M5 8h10M8 12h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <span>筛选器</span>
+      @if (hasActiveFilters()) {
+        <span class="filter-badge">{{ getActiveFilterCount() }}</span>
+      }
+    </div>
+    <button class="toggle-btn" type="button">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"
+           [class.rotated]="isExpanded()">
+        <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- 筛选器内容 -->
+  <div class="filter-content" [class.expanded]="isExpanded()">
+    <!-- 排序选项 -->
+    <div class="filter-section">
+      <h3 class="section-title">排序方式</h3>
+      <div class="sort-options">
+        <button
+          class="sort-btn"
+          [class.active]="currentSort() === 'latest'"
+          (click)="changeSort('latest')"
+          type="button">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M8 3v10M8 13l-3-3M8 13l3-3" stroke="currentColor"
+                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          最新
+        </button>
+        <button
+          class="sort-btn"
+          [class.active]="currentSort() === 'popular'"
+          (click)="changeSort('popular')"
+          type="button">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M8 2l2 5h5l-4 3 2 5-5-3-5 3 2-5-4-3h5l2-5z"
+                  stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+          </svg>
+          最热
+        </button>
+        <button
+          class="sort-btn"
+          [class.active]="currentSort() === 'title'"
+          (click)="changeSort('title')"
+          type="button">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M3 4h10M3 8h7M3 12h4" stroke="currentColor"
+                  stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          标题
+        </button>
+      </div>
+    </div>
+
+    <!-- 分类筛选 -->
+    <div class="filter-section">
+      <h3 class="section-title">分类</h3>
+      <div class="category-list">
+        <button
+          class="category-btn"
+          [class.active]="!currentCategoryId()"
+          (click)="selectCategory(undefined)"
+          type="button">
+          全部
+        </button>
+        @for (category of categories(); track category.id) {
+          <button
+            class="category-btn"
+            [class.active]="currentCategoryId() === category.id"
+            (click)="selectCategory(category.id)"
+            type="button">
+            <span class="category-icon" [style.background-color]="category.color">
+              {{ category.icon }}
+            </span>
+            {{ category.name }}
+            <span class="category-count">{{ category.blogCount }}</span>
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- 标签筛选 -->
+    <div class="filter-section">
+      <h3 class="section-title">标签</h3>
+      <div class="tag-list">
+        @for (tag of availableTags(); track tag) {
+          <button
+            class="tag-chip"
+            [class.active]="isTagSelected(tag)"
+            (click)="toggleTag(tag)"
+            type="button">
+            {{ tag }}
+            @if (isTagSelected(tag)) {
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M10 4L6 8l-2-2" stroke="currentColor"
+                      stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            }
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- 清除筛选按钮 -->
+    @if (hasActiveFilters()) {
+      <div class="filter-actions">
+        <button class="clear-btn" (click)="onClearFilters()" type="button">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M12 4L4 12M4 4l8 8" stroke="currentColor"
+                  stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          清除所有筛选
+        </button>
+      </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,346 @@
+<div class="blog-list-container">
+  <!-- 头部搜索区 -->
+  <div class="blog-header">
+    <div class="container">
+      <div class="header-top">
+        <div class="header-text">
+          <h1>技术博客</h1>
+          <p class="subtitle">分享编程知识与开发经验</p>
+        </div>
+      </div>
+
+      <!-- 搜索和筛选区域 -->
+      <div class="search-filter-wrapper">
+        <!-- 搜索框 -->
+        <div class="search-section">
+          <app-search-bar
+            [placeholder]="'搜索博客标题、内容...'"
+            [initialValue]="searchQuery()"
+            (search)="onSearch($event)"
+            (clear)="onClearSearch()">
+          </app-search-bar>
+        </div>
+
+        <!-- 快捷筛选栏 -->
+        <div class="quick-filters">
+          <!-- 排序选择 -->
+          <div class="filter-group">
+            <label class="filter-label">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M7 2v10M7 12l-3-3M7 12l3-3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              排序
+            </label>
+            <select class="filter-select" [value]="sortBy()" (change)="onSortChange($event)">
+              <option value="latest">最新发布</option>
+              <option value="popular">最热门</option>
+              <option value="title">标题 A-Z</option>
+            </select>
+          </div>
+
+          <!-- 分类选择 -->
+          <div class="filter-group">
+            <label class="filter-label">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M2 2h4v4H2V2zM8 2h4v4H8V2zM2 8h4v4H2V8z" stroke="currentColor" stroke-width="1.5"/>
+              </svg>
+              分类
+            </label>
+            <select class="filter-select" [value]="selectedCategory() || ''" (change)="onCategoryChange($event)">
+              <option value="">全部分类</option>
+              @for (category of categories(); track category.id) {
+                <option [value]="category.id">{{ category.name }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- 更多筛选按钮 -->
+          <button class="more-filters-btn" (click)="toggleAdvancedFilters()" type="button">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M2 4h12M5 8h6M7 12h2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            更多筛选
+            @if (selectedTags().length > 0) {
+              <span class="filter-count">{{ selectedTags().length }}</span>
+            }
+          </button>
+
+          <!-- 清除筛选 -->
+          @if (hasActiveFilters()) {
+            <button class="clear-filters-btn" (click)="clearFilters()" type="button">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M10 4L4 10M4 4l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              清除
+            </button>
+          }
+        </div>
+
+        <!-- 高级筛选面板 -->
+        @if (showAdvancedFilters()) {
+          <div class="advanced-filters">
+            <div class="advanced-filters-header">
+              <h3>标签筛选</h3>
+              <button class="close-btn" (click)="toggleAdvancedFilters()" type="button">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M12 4L4 12M4 4l8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </button>
+            </div>
+            <div class="tags-filter">
+              @for (tag of availableTags(); track tag) {
+                <button
+                  class="tag-chip"
+                  [class.active]="selectedTags().includes(tag)"
+                  (click)="selectTag(tag)"
+                  type="button">
+                  #{{ tag }}
+                  @if (selectedTags().includes(tag)) {
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                      <path d="M9 3L5 7l-2-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                  }
+                </button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+  
+  <div class="container main-content">
+    <div class="content-wrapper">
+      <!-- 左侧：博客列表 -->
+      <div class="blog-list-section">
+        <!-- 筛选条件显示 -->
+        @if (hasActiveFilters()) {
+          <div class="filter-badge">
+            <span>当前筛选：</span>
+            @if (searchQuery()) {
+              <span class="badge">
+                搜索: {{ searchQuery() }}
+                <button (click)="onClearSearch()">✕</button>
+              </span>
+            }
+            @if (selectedCategory()) {
+              <span class="badge">
+                {{ getCategoryName(selectedCategory()!) }}
+                <button (click)="selectCategory(undefined)">✕</button>
+              </span>
+            }
+            @for (tag of selectedTags(); track tag) {
+              <span class="badge">
+                #{{ tag }}
+                <button (click)="selectTag(tag)">✕</button>
+              </span>
+            }
+            @if (sortBy() !== 'latest') {
+              <span class="badge">
+                排序: {{ sortBy() === 'popular' ? '最热' : '标题' }}
+                <button (click)="sortBy.set('latest'); updateUrlParams()">✕</button>
+              </span>
+            }
+            <button (click)="clearFilters()" class="clear-all">清除所有</button>
+          </div>
+        }
+        
+        <!-- 加载状态 -->
+        @if (isLoading()) {
+          <div class="loading">
+            <div class="spinner"></div>
+            <p>加载中...</p>
+          </div>
+        }
+        
+        <!-- 博客卡片列表 -->
+        @if (!isLoading() && hasBlogs()) {
+          <div class="blog-cards">
+            @for (blog of blogs(); track blog.id) {
+              <article class="blog-card" (click)="viewBlog(blog.id)">
+                <!-- 封面图 -->
+                @if (blog.coverImage) {
+                  <div class="blog-cover">
+                    <img
+                      [src]="blog.coverImage"
+                      [alt]="blog.title"
+                      (error)="onImageError($event)"
+                      loading="lazy">
+                    @if (!blog.isPublished) {
+                      <span class="draft-badge">草稿</span>
+                    }
+                  </div>
+                }
+                
+                <div class="blog-content">
+                  <!-- 分类标签 -->
+                  <div class="blog-meta-top">
+                    <span class="category-badge">
+                      {{ blog.category.name }}
+                    </span>
+                    <span class="date">
+                      {{ blog.publishedAt | dateFormat }}
+                    </span>
+                  </div>
+                  
+                  <!-- 标题 -->
+                  <h2 class="blog-title">{{ blog.title }}</h2>
+                  
+                  <!-- 摘要 -->
+                  <p class="blog-excerpt">
+                    {{ blog.excerpt | excerpt:150 }}
+                  </p>
+                  
+                  <!-- 标签 -->
+                  <div class="blog-tags">
+                    @for (tag of blog.tags; track tag) {
+                      <span
+                        class="tag"
+                        [class.active]="selectedTags().includes(tag)"
+                        (click)="selectTag(tag); $event.stopPropagation()">
+                        #{{ tag }}
+                      </span>
+                    }
+                  </div>
+                  
+                  <!-- 底部元信息 -->
+                  <div class="blog-meta-bottom">
+                    <div class="author-info">
+                      @if (blog.authorAvatar) {
+                        <img [src]="blog.authorAvatar" [alt]="blog.author" class="avatar">
+                      }
+                      <span>{{ blog.author }}</span>
+                    </div>
+                    
+                    <div class="blog-stats">
+                      <span title="浏览量">
+                        👁️ {{ blog.viewCount }}
+                      </span>
+                      <span title="点赞数">
+                        ❤️ {{ blog.likeCount }}
+                      </span>
+                      <span title="评论数">
+                        💬 {{ blog.commentCount }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            }
+          </div>
+          
+          <!-- 分页 -->
+          @if (totalPages() > 1) {
+            <div class="pagination">
+              <button 
+                (click)="goToPage(currentPage() - 1)"
+                [disabled]="currentPage() === 1"
+                class="page-btn">
+                ← 上一页
+              </button>
+              
+              @if (pages()[0] > 1) {
+                <button (click)="goToPage(1)" class="page-number">1</button>
+                @if (pages()[0] > 2) {
+                  <span class="ellipsis">...</span>
+                }
+              }
+              
+              @for (page of pages(); track page) {
+                <button 
+                  (click)="goToPage(page)"
+                  [class.active]="page === currentPage()"
+                  class="page-number">
+                  {{ page }}
+                </button>
+              }
+              
+              @if (pages()[pages().length - 1] < totalPages()) {
+                @if (pages()[pages().length - 1] < totalPages() - 1) {
+                  <span class="ellipsis">...</span>
+                }
+                <button (click)="goToPage(totalPages())" class="page-number">
+                  {{ totalPages() }}
+                </button>
+              }
+              
+              <button 
+                (click)="goToPage(currentPage() + 1)"
+                [disabled]="currentPage() === totalPages()"
+                class="page-btn">
+                下一页 →
+              </button>
+            </div>
+          }
+        }
+        
+        <!-- 空状态 -->
+        @if (!isLoading() && !hasBlogs()) {
+          <div class="empty-state">
+            <div class="empty-icon">📝</div>
+            <h3>暂无博客</h3>
+            <p>还没有发布任何博客文章</p>
+          </div>
+        }
+      </div>
+      
+      <!-- 右侧：侧边栏 -->
+      <aside class="sidebar">
+        <!-- 分类列表 -->
+        <div class="sidebar-card">
+          <h3 class="sidebar-title">📂 分类</h3>
+          <ul class="category-list">
+            <li
+              (click)="selectCategory(undefined)"
+              [class.active]="!selectedCategory()">
+              <span>全部</span>
+              <span class="count">{{ totalBlogs() }}</span>
+            </li>
+            @for (category of categories(); track category.id) {
+              <li
+                (click)="selectCategory(category.id)"
+                [class.active]="selectedCategory() === category.id">
+                <span>{{ category.name }}</span>
+                <span class="count">{{ category.blogCount }}</span>
+              </li>
+            }
+          </ul>
+        </div>
+        
+        <!-- 热门文章 -->
+        <div class="sidebar-card">
+          <h3 class="sidebar-title">🔥 热门文章</h3>
+          <ul class="popular-list">
+            @for (blog of popularBlogs(); track blog.id; let i = $index) {
+              <li (click)="viewBlog(blog.id)">
+                <span class="rank">{{ i + 1 }}</span>
+                <div class="popular-info">
+                  <h4>{{ blog.title }}</h4>
+                  <div class="popular-meta">
+                    <span>👁️ {{ blog.viewCount }}</span>
+                    <span>❤️ {{ blog.likeCount }}</span>
+                  </div>
+                </div>
+              </li>
+            }
+          </ul>
+        </div>
+        
+        <!-- 标签云 -->
+        <div class="sidebar-card">
+          <h3 class="sidebar-title">🏷️ 标签云</h3>
+          <div class="tag-cloud">
+            @for (tag of getAllTags(); track tag) {
+              <span
+                class="tag-item"
+                (click)="selectTag(tag)"
+                [class.active]="selectedTags().includes(tag)">
+                {{ tag }}
+              </span>
+            }
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>

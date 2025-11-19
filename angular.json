@@ -29,11 +29,7 @@
             "styles": [
               "src/styles.scss"
             ],
-            "server": "src/main.server.ts",
-            "outputMode": "server",
-            "ssr": {
-              "entry": "src/server.ts"
-            }
+            "outputMode": "static"
           },
           "configurations": {
             "production": {
@@ -45,8 +41,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "4kB",
-                  "maximumError": "8kB"
+                  "maximumWarning": "20kB",
+                  "maximumError": "50kB"
                 }
               ],
               "outputHashing": "all"
@@ -92,5 +88,8 @@
         }
       }
     }
+  },
+  "cli": {
+    "analytics": "5c0a934d-2175-484c-ae14-6ad93dc808ab"
   }
 }

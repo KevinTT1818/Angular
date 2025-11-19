@@ -1,0 +1,73 @@
+<header class="header">
+  <div class="container">
+    <div class="header-content">
+      <!-- Logo -->
+      <div class="logo">
+        <a routerLink="/home" class="logo-link">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <rect width="32" height="32" rx="8" fill="url(#gradient)"/>
+            <path d="M16 8L20 14H12L16 8Z" fill="white"/>
+            <rect x="12" y="16" width="8" height="8" rx="2" fill="white"/>
+            <defs>
+              <linearGradient id="gradient" x1="0" y1="0" x2="32" y2="32">
+                <stop offset="0%" stop-color="#667eea"/>
+                <stop offset="100%" stop-color="#764ba2"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <span class="logo-text">我的博客</span>
+        </a>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="nav" [class.nav-open]="isMenuOpen">
+        <a routerLink="/home" routerLinkActive="active" class="nav-link">首页</a>
+        <a routerLink="/dashboard" routerLinkActive="active" class="nav-link">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <rect x="1" y="1" width="6" height="6" rx="1" stroke="currentColor" stroke-width="2"/>
+            <rect x="9" y="1" width="6" height="6" rx="1" stroke="currentColor" stroke-width="2"/>
+            <rect x="1" y="9" width="6" height="6" rx="1" stroke="currentColor" stroke-width="2"/>
+            <rect x="9" y="9" width="6" height="6" rx="1" stroke="currentColor" stroke-width="2"/>
+          </svg>
+          数据统计
+        </a>
+        <a routerLink="/blogs" routerLinkActive="active" class="nav-link">博客列表</a>
+
+        @if (isLoggedIn()) {
+          <a routerLink="/admin/blogs/new" routerLinkActive="active" class="nav-link btn-primary">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            新建博客
+          </a>
+
+          <div class="user-menu">
+            @if (currentUser()?.avatar) {
+              <img [src]="currentUser()?.avatar" [alt]="currentUser()?.username" class="user-avatar">
+            }
+            <button class="logout-btn" (click)="logout()" type="button">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M6 14H3a1 1 0 01-1-1V3a1 1 0 011-1h3M11 11l3-3-3-3M14 8H6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              登出
+            </button>
+          </div>
+        } @else {
+          <a routerLink="/login" routerLinkActive="active" class="nav-link btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M10 14h3a1 1 0 001-1V3a1 1 0 00-1-1h-3M7 11l3-3-3-3M10 8H2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            登录
+          </a>
+        }
+      </nav>
+
+      <!-- Mobile Menu Toggle -->
+      <button class="menu-toggle" (click)="toggleMenu()" [attr.aria-label]="'菜单'">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </div>
+</header>

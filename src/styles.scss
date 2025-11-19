@@ -1,1 +1,41 @@
 /* You can add global styles to this file, and also import other style files */
+
+// Angular Material 主题 - Material 3 API
+// 注意: @use 必须在所有其他规则之前
+@use '@angular/material' as mat;
+
+// Material 3 主题配置
+$blog-theme: mat.define-theme((
+  color: (
+    theme-type: light,
+    primary: mat.$violet-palette,
+    tertiary: mat.$blue-palette,
+  ),
+));
+
+// 应用主题到所有组件
+:root {
+  @include mat.all-component-themes($blog-theme);
+}
+
+// Swiper 样式
+@import 'swiper/css';
+@import 'swiper/css/navigation';
+@import 'swiper/css/pagination';
+@import 'swiper/css/autoplay';
+
+// 自定义全局样式
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  margin: 0;
+}

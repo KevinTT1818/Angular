@@ -1,0 +1,209 @@
+<div class="dashboard-container">
+  <!-- 头部 -->
+  <div class="dashboard-header">
+    <div class="container">
+      <h1>📊 数据统计</h1>
+      <p class="subtitle">博客系统数据总览</p>
+    </div>
+  </div>
+
+  <div class="container">
+    @if (isLoading()) {
+      <div class="loading">
+        <div class="spinner"></div>
+        <p>加载中...</p>
+      </div>
+    } @else {
+      <!-- 统计卡片 -->
+      <div class="stats-grid">
+        @for (stat of stats(); track stat.title) {
+          <div class="stat-card" [style.border-left-color]="stat.color">
+            <div class="stat-icon" [style.background-color]="stat.color + '20'">
+              {{ stat.icon }}
+            </div>
+            <div class="stat-content">
+              <h3 class="stat-title">{{ stat.title }}</h3>
+              <div class="stat-value">{{ formatNumber(stat.value) }}</div>
+              <div class="stat-change" [class.positive]="stat.trend === 'up'" [class.negative]="stat.trend === 'down'">
+                <span class="arrow">{{ stat.trend === 'up' ? '↑' : '↓' }}</span>
+                {{ stat.change }}% 较上月
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- 主要内容区域 -->
+      <div class="dashboard-content">
+        <!-- 左侧列 -->
+        <div class="content-left">
+          <!-- 月度发布趋势 -->
+          <div class="dashboard-card">
+            <div class="card-header">
+              <h2>📈 月度发布趋势</h2>
+            </div>
+            <div class="card-body">
+              <!-- 日期范围选择器 -->
+              <div class="date-range-selector">
+                <mat-form-field appearance="outline" class="date-field">
+                  <mat-label>开始日期</mat-label>
+                  <input
+                    matInput
+                    [matDatepicker]="startPicker"
+                    [value]="startDate()"
+                    (dateChange)="onStartDateChange($event.value)"
+                    placeholder="选择开始日期">
+                  <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
+                  <mat-datepicker #startPicker></mat-datepicker>
+                </mat-form-field>
+
+                <span class="date-separator">至</span>
+
+                <mat-form-field appearance="outline" class="date-field">
+                  <mat-label>结束日期</mat-label>
+                  <input
+                    matInput
+                    [matDatepicker]="endPicker"
+                    [value]="endDate()"
+                    (dateChange)="onEndDateChange($event.value)"
+                    placeholder="选择结束日期">
+                  <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
+                  <mat-datepicker #endPicker></mat-datepicker>
+                </mat-form-field>
+
+                <button mat-raised-button color="primary" (click)="resetDateRange()" class="reset-button">
+                  重置
+                </button>
+              </div>
+
+              <!-- ECharts 曲线图 -->
+              <div class="chart-container">
+                <div echarts [options]="chartOption()" class="echarts-chart"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 分类统计 -->
+          <div class="dashboard-card">
+            <div class="card-header">
+              <h2>📂 分类统计</h2>
+            </div>
+            <div class="card-body">
+              <div class="category-stats">
+                @for (cat of categoryStats(); track cat.label) {
+                  <div class="category-item">
+                    <div class="category-info">
+                      <span class="category-label">{{ cat.label }}</span>
+                      <span class="category-count">{{ cat.value }} 篇 ({{ cat.percentage }}%)</span>
+                    </div>
+                    <div class="progress-bar">
+                      <div
+                        class="progress-fill"
+                        [style.width.%]="cat.percentage">
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- 热门标签 -->
+          <div class="dashboard-card">
+            <div class="card-header">
+              <h2>🏷️ 热门标签</h2>
+            </div>
+            <div class="card-body">
+              <div class="tag-cloud-stats">
+                @for (tag of tagStats(); track tag.label) {
+                  <div class="tag-stat-item">
+                    <span class="tag-name">#{{ tag.label }}</span>
+                    <span class="tag-count">{{ tag.value }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 右侧列 -->
+        <div class="content-right">
+          <!-- 发布状态 -->
+          <div class="dashboard-card">
+            <div class="card-header">
+              <h2>📋 发布状态</h2>
+            </div>
+            <div class="card-body">
+              <div class="publish-stats">
+                @for (stat of publishStats(); track stat.label) {
+                  <div class="publish-item">
+                    <div class="publish-info">
+                      <div
+                        class="publish-indicator"
+                        [class.published]="stat.label === '已发布'"
+                        [class.draft]="stat.label === '草稿'">
+                      </div>
+                      <span class="publish-label">{{ stat.label }}</span>
+                    </div>
+                    <div class="publish-value">
+                      <span class="value">{{ stat.value }}</span>
+                      <span class="percentage">{{ stat.percentage }}%</span>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- 热门文章 -->
+          <div class="dashboard-card">
+            <div class="card-header">
+              <h2>🔥 热门文章</h2>
+            </div>
+            <div class="card-body">
+              <div class="blog-list">
+                @for (blog of popularBlogs(); track blog.id; let i = $index) {
+                  <div class="blog-item" [routerLink]="['/blog', blog.id]">
+                    <div class="blog-rank">{{ i + 1 }}</div>
+                    <div class="blog-info">
+                      <h4 class="blog-title">{{ blog.title }}</h4>
+                      <div class="blog-meta">
+                        <span>👁️ {{ blog.viewCount }}</span>
+                        <span>❤️ {{ blog.likeCount }}</span>
+                        <span>💬 {{ blog.commentCount }}</span>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- 最新文章 -->
+          <div class="dashboard-card">
+            <div class="card-header">
+              <h2>📝 最新文章</h2>
+            </div>
+            <div class="card-body">
+              <div class="blog-list">
+                @for (blog of recentBlogs(); track blog.id) {
+                  <div class="blog-item" [routerLink]="['/blog', blog.id]">
+                    <div class="blog-date">
+                      {{ blog.publishedAt | dateFormat:'short' }}
+                    </div>
+                    <div class="blog-info">
+                      <h4 class="blog-title">{{ blog.title }}</h4>
+                      <div class="blog-category">
+                        <span class="category-badge">{{ blog.category.name }}</span>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>

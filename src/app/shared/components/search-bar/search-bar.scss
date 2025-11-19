@@ -1,0 +1,125 @@
+.search-bar {
+  position: relative;
+  transition: all 0.3s ease;
+
+  .search-container {
+    display: flex;
+    align-items: center;
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 24px;
+    padding: 10px 16px;
+    transition: all 0.3s ease;
+    width: 100%;
+
+    &:hover {
+      border-color: #667eea;
+      box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+    }
+
+    &:focus-within {
+      border-color: #667eea;
+      box-shadow: 0 2px 12px rgba(102, 126, 234, 0.2);
+    }
+  }
+
+  &.expanded .search-container {
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.25);
+  }
+
+  .search-icon-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    padding: 4px;
+    transition: color 0.2s;
+
+    &:hover {
+      color: #667eea;
+    }
+
+    svg {
+      display: block;
+    }
+  }
+
+  .search-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    padding: 4px 12px;
+    font-size: 14px;
+    color: #333;
+    background: transparent;
+    min-width: 150px;
+    transition: all 0.3s ease;
+
+    &.visible {
+      width: 100%;
+      opacity: 1;
+    }
+
+    &::placeholder {
+      color: #999;
+    }
+  }
+
+  .clear-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: #999;
+    cursor: pointer;
+    padding: 4px;
+    transition: all 0.2s;
+    margin-right: 4px;
+
+    &:hover {
+      color: #e74c3c;
+      transform: scale(1.1);
+    }
+
+    svg {
+      display: block;
+    }
+  }
+
+  .search-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 16px;
+    padding: 6px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+
+  // 响应式设计
+  @media (max-width: 768px) {
+    .search-container {
+      max-width: 100%;
+    }
+
+    &.expanded .search-container {
+      max-width: 100%;
+    }
+  }
+}
