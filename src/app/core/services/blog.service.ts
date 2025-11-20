@@ -110,8 +110,9 @@ export class BlogService {
     page?: number;
     limit?: number;
     categoryId?: string;
-    tag?: string;
+    tags?: string;
     search?: string;
+    sort?: string;
   }): Observable<{ blogs: Blog[]; total: number }> {
     if (this.useMock) {
       return this.mockDataService.getBlogs(params);
@@ -122,11 +123,12 @@ export class BlogService {
 
     this.isLoading.set(true);
 
-    return this.http.get<ApiResponse<PaginatedResponse<Blog>>>(url, { params: httpParams }).pipe(
+    // 后端直接返回 { blogs, total, page, limit, totalPages }
+    return this.http.get<{ blogs: Blog[]; total: number; page: number; limit: number; totalPages: number }>(url, { params: httpParams }).pipe(
       retry(environment.retryAttempts),
       map(response => ({
-        blogs: response.data.data,
-        total: response.data.total
+        blogs: response.blogs,
+        total: response.total
       })),
       tap(() => this.isLoading.set(false)),
       catchError(error => {
@@ -147,9 +149,9 @@ export class BlogService {
     const url = this.buildUrl(environment.endpoints.blogDetail, { id });
     this.isLoading.set(true);
 
-    return this.http.get<ApiResponse<Blog>>(url).pipe(
+    // 后端直接返回 Blog 对象
+    return this.http.get<Blog>(url).pipe(
       retry(environment.retryAttempts),
-      map(response => response.data),
       tap(blog => {
         this.currentBlog.set(blog);
         this.isLoading.set(false);
@@ -172,8 +174,8 @@ export class BlogService {
     const url = this.buildUrl(environment.endpoints.createBlog);
     this.isLoading.set(true);
 
-    return this.http.post<ApiResponse<Blog>>(url, blog).pipe(
-      map(response => response.data),
+    // 后端直接返回 Blog 对象
+    return this.http.post<Blog>(url, blog).pipe(
       tap(() => this.isLoading.set(false)),
       catchError(error => {
         this.isLoading.set(false);
@@ -193,8 +195,8 @@ export class BlogService {
     const url = this.buildUrl(environment.endpoints.updateBlog, { id });
     this.isLoading.set(true);
 
-    return this.http.put<ApiResponse<Blog>>(url, blog).pipe(
-      map(response => response.data),
+    // 后端使用 PATCH 而不是 PUT，并直接返回 Blog 对象
+    return this.http.patch<Blog>(url, blog).pipe(
       tap(() => this.isLoading.set(false)),
       catchError(error => {
         this.isLoading.set(false);
@@ -214,7 +216,8 @@ export class BlogService {
     const url = this.buildUrl(environment.endpoints.deleteBlog, { id });
     this.isLoading.set(true);
 
-    return this.http.delete<ApiResponse<void>>(url).pipe(
+    // 后端返回 { message: string }
+    return this.http.delete<{ message: string }>(url).pipe(
       map(() => undefined),
       tap(() => this.isLoading.set(false)),
       catchError(error => {
@@ -234,32 +237,20 @@ export class BlogService {
 
     const url = this.buildUrl(environment.endpoints.categories);
 
-    return this.http.get<ApiResponse<Category[]>>(url).pipe(
+    // 后端直接返回 Category[] 数组
+    return this.http.get<Category[]>(url).pipe(
       retry(environment.retryAttempts),
-      map(response => response.data),
       tap(categories => this.categories.set(categories)),
       catchError(error => this.handleError(error))
     );
   }
 
   /**
-   * 增加浏览量
+   * 增加浏览量（后端自动处理）
    */
   incrementViewCount(id: string): Observable<void> {
-    if (this.useMock) {
-      return this.mockDataService.incrementViewCount(id);
-    }
-
-    const url = this.buildUrl(`${environment.endpoints.blogDetail}/view`, { id });
-
-    return this.http.post<ApiResponse<void>>(url, {}).pipe(
-      map(() => undefined),
-      catchError(error => {
-        // 浏览量统计失败不影响用户体验，静默处理
-        console.warn('浏览量统计失败:', error);
-        return of(undefined);
-      })
-    );
+    // 后端在 getBlogById 时自动增加浏览量，前端无需单独调用
+    return of(undefined);
   }
 
   /**
@@ -270,9 +261,10 @@ export class BlogService {
       return this.mockDataService.likeBlog(id);
     }
 
-    const url = this.buildUrl(`${environment.endpoints.blogDetail}/like`, { id });
+    const url = `${this.apiUrl}/blogs/${id}/like`;
 
-    return this.http.post<ApiResponse<void>>(url, {}).pipe(
+    // 后端返回更新后的 Blog 对象
+    return this.http.post<Blog>(url, {}).pipe(
       map(() => undefined),
       catchError(error => this.handleError(error))
     );
@@ -286,12 +278,12 @@ export class BlogService {
       return this.mockDataService.searchBlogs(query);
     }
 
-    const url = this.buildUrl(`${environment.endpoints.blogs}/search`);
+    const url = `${this.apiUrl}/blogs/search`;
     const params = this.buildParams({ q: query });
 
-    return this.http.get<ApiResponse<Blog[]>>(url, { params }).pipe(
+    // 后端直接返回 Blog[] 数组
+    return this.http.get<Blog[]>(url, { params }).pipe(
       retry(environment.retryAttempts),
-      map(response => response.data),
       catchError(error => this.handleError(error))
     );
   }
@@ -304,12 +296,12 @@ export class BlogService {
       return this.mockDataService.getPopularBlogs(limit);
     }
 
-    const url = this.buildUrl(`${environment.endpoints.blogs}/popular`);
+    const url = `${this.apiUrl}/blogs/popular`;
     const params = this.buildParams({ limit });
 
-    return this.http.get<ApiResponse<Blog[]>>(url, { params }).pipe(
+    // 后端直接返回 Blog[] 数组
+    return this.http.get<Blog[]>(url, { params }).pipe(
       retry(environment.retryAttempts),
-      map(response => response.data),
       catchError(error => this.handleError(error))
     );
   }
@@ -322,12 +314,12 @@ export class BlogService {
       return this.mockDataService.getRecentBlogs(limit);
     }
 
-    const url = this.buildUrl(`${environment.endpoints.blogs}/recent`);
+    const url = `${this.apiUrl}/blogs/recent`;
     const params = this.buildParams({ limit });
 
-    return this.http.get<ApiResponse<Blog[]>>(url, { params }).pipe(
+    // 后端直接返回 Blog[] 数组
+    return this.http.get<Blog[]>(url, { params }).pipe(
       retry(environment.retryAttempts),
-      map(response => response.data),
       catchError(error => this.handleError(error))
     );
   }
