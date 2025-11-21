@@ -33,9 +33,55 @@ $blog-theme: mat.define-theme((
 
 html, body {
   height: 100%;
+  overflow-x: hidden;
 }
 
 body {
   font-family: Roboto, "Helvetica Neue", sans-serif;
   margin: 0;
+
+  // 全局背景渐变
+  background: linear-gradient(
+    135deg,
+    #667eea 0%,
+    #764ba2 25%,
+    #f093fb 50%,
+    #4facfe 75%,
+    #00f2fe 100%
+  );
+  background-size: 400% 400%;
+  background-attachment: fixed;
+  animation: gradientShift 15s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+// 美化滚动条
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border-radius: 5px;
+
+  &:hover {
+    background: linear-gradient(135deg, #764ba2, #f093fb);
+  }
 }

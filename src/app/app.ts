@@ -2,10 +2,12 @@ import { Component, signal, inject, OnInit } from '@angular/core';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { Header } from './shared/components/header/header';
+import { SnowflakeComponent } from './shared/components/snowflake/snowflake.component';
+import { ParticlesComponent } from './shared/components/particles/particles.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Header],
+  imports: [RouterOutlet, Header, SnowflakeComponent, ParticlesComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
