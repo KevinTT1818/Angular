@@ -77,27 +77,30 @@ export class SeoService {
    */
   setBlogSEO(blog: Blog): void {
     const url = `${window.location.origin}/blog/${blog.id}`;
-    
+
     this.updateMetaTags({
-      title: blog.seo.metaTitle || blog.title,
-      description: blog.seo.metaDescription || blog.excerpt,
-      keywords: blog.seo.metaKeywords || blog.tags,
-      image: blog.seo.ogImage || blog.coverImage,
+      title: blog.seo?.metaTitle || blog.title,
+      description: blog.seo?.metaDescription || blog.excerpt,
+      keywords: blog.seo?.metaKeywords || blog.tags,
+      image: blog.seo?.ogImage || blog.coverImage,
       type: 'article',
       url: url
     });
-    
+
     // 设置文章特定的Meta标签
-    this.meta.updateTag({ property: 'article:published_time', content: blog.publishedAt.toISOString() });
-    this.meta.updateTag({ property: 'article:modified_time', content: blog.updatedAt.toISOString() });
+    const publishedTime = typeof blog.publishedAt === 'string' ? blog.publishedAt : blog.publishedAt.toISOString();
+    const modifiedTime = typeof blog.updatedAt === 'string' ? blog.updatedAt : blog.updatedAt.toISOString();
+
+    this.meta.updateTag({ property: 'article:published_time', content: publishedTime });
+    this.meta.updateTag({ property: 'article:modified_time', content: modifiedTime });
     this.meta.updateTag({ property: 'article:author', content: blog.author });
-    
+
     blog.tags.forEach(tag => {
       this.meta.addTag({ property: 'article:tag', content: tag });
     });
-    
+
     // 更新canonical URL
-    this.updateCanonicalUrl(blog.seo.canonicalUrl || url);
+    this.updateCanonicalUrl(blog.seo?.canonicalUrl || url);
   }
   
   /**
@@ -140,6 +143,9 @@ export class SeoService {
    * 为博客文章添加结构化数据
    */
   addBlogStructuredData(blog: Blog): void {
+    const publishedTime = typeof blog.publishedAt === 'string' ? blog.publishedAt : blog.publishedAt.toISOString();
+    const modifiedTime = typeof blog.updatedAt === 'string' ? blog.updatedAt : blog.updatedAt.toISOString();
+
     const structuredData = {
       '@context': 'https://schema.org',
       '@type': 'BlogPosting',
@@ -150,8 +156,8 @@ export class SeoService {
         '@type': 'Person',
         'name': blog.author
       },
-      'datePublished': blog.publishedAt.toISOString(),
-      'dateModified': blog.updatedAt.toISOString(),
+      'datePublished': publishedTime,
+      'dateModified': modifiedTime,
       'publisher': {
         '@type': 'Organization',
         'name': '我的博客',
@@ -162,7 +168,7 @@ export class SeoService {
       },
       'keywords': blog.tags.join(', ')
     };
-    
+
     this.addStructuredData(structuredData);
   }
   

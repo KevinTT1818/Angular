@@ -1,13 +1,27 @@
+// 动态获取API URL - 根据当前访问地址自动调整
+const getApiUrl = (): string => {
+  if (typeof window === 'undefined') {
+    return 'http://localhost:3000/api';
+  }
+
+  const hostname = window.location.hostname;
+  const protocol = window.location.protocol;
+
+  // 如果是localhost，使用localhost:3000
+  // 否则使用当前主机的IP:3000
+  return `${protocol}//${hostname}:3000/api`;
+};
+
 export const environment = {
   production: false,
 
   // API配置
-  apiUrl: 'http://localhost:3000/api',
+  apiUrl: getApiUrl(),
   apiVersion: 'v1',
 
   // 功能开关
   useMockData: false, // 设置为 false 使用真实API
-  enableAuth: false,  // 是否启用认证
+  enableAuth: true,  // 是否启用认证
 
   // API端点
   endpoints: {

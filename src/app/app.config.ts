@@ -11,6 +11,7 @@ import { CanvasRenderer } from 'echarts/renderers';
 import { routes } from './app.routes';
 import { apiInterceptor } from './core/interceptor/api.interceptor';
 import { errorInterceptor } from './core/interceptor/error-interceptor';
+import { authInterceptor } from './core/interceptors/auth.interceptor';
 
 // 注册 ECharts 组件
 echarts.use([LineChart, GridComponent, TooltipComponent, TitleComponent, CanvasRenderer]);
@@ -33,7 +34,7 @@ export const appConfig: ApplicationConfig = {
     
     // HTTP客户端配置
     provideHttpClient(
-      withInterceptors([apiInterceptor, errorInterceptor]),
+      withInterceptors([authInterceptor, apiInterceptor, errorInterceptor]),
       withFetch()  // 使用Fetch API（性能更好）
     ),
     

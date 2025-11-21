@@ -17,6 +17,14 @@ export const routes: Routes = [
     title: '登录 | 我的博客'
   },
 
+  // 注册页面
+  {
+    path: 'register',
+    loadComponent: () =>
+      import('./features/auth/register/register').then(m => m.RegisterComponent),
+    title: '注册 | 我的博客'
+  },
+
   // 首页
   {
     path: 'home',

@@ -1,180 +1,206 @@
-import { Injectable, signal, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Injectable, signal, inject, computed } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap } from 'rxjs';
-
-interface User {
-  id: string;
-  username: string;
-  email: string;
-  role: string;
-  avatar?: string;
-}
-
-interface LoginResponse {
-  token: string;
-  user: User;
-}
+import { Observable, tap, catchError, throwError, BehaviorSubject } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import {
+  User,
+  LoginRequest,
+  RegisterRequest,
+  AuthResponse,
+  TokenPayload,
+} from '../models/auth/auth.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
-  
-  // Signals
-  currentUser = signal<User | null>(null);
-  isLoggedIn = signal(false);
-  
-  constructor() {
-    // 初始化时检查本地存储的token
-    this.checkStoredAuth();
+
+  // Storage keys
+  private readonly ACCESS_TOKEN_KEY = 'access_token';
+  private readonly REFRESH_TOKEN_KEY = 'refresh_token';
+  private readonly USER_KEY = 'current_user';
+
+  // Signals and Observable
+  private currentUserSubject = new BehaviorSubject<User | null>(this.getUserFromStorage());
+  currentUser$ = this.currentUserSubject.asObservable();
+
+  currentUser = signal<User | null>(this.getUserFromStorage());
+  isAuthenticated = computed(() => !!this.currentUser());
+  isAdmin = computed(() => this.currentUser()?.role === 'ADMIN');
+
+  private get apiUrl(): string {
+    return environment.apiUrl;
   }
-  
+
   /**
-   * 检查本地存储的认证信息
+   * 用户注册
    */
-  private checkStoredAuth(): void {
-    const token = localStorage.getItem('auth_token');
-    const userStr = localStorage.getItem('current_user');
-    
-    if (token && userStr) {
-      try {
-        const user = JSON.parse(userStr);
-        this.currentUser.set(user);
-        this.isLoggedIn.set(true);
-      } catch (e) {
-        this.clearAuth();
-      }
-    }
+  register(registerData: RegisterRequest): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/register`, registerData).pipe(
+      tap((response) => this.handleAuthResponse(response)),
+      catchError(this.handleError)
+    );
   }
-  
+
   /**
-   * 登录（支持email或username）
+   * 用户登录
    */
-  login(email: string, password: string): Observable<LoginResponse> {
-    // Mock登录 - 仅用于演示
-    // 在生产环境中应该调用真实API
-    return new Observable(observer => {
-      setTimeout(() => {
-        // 模拟登录验证
-        if (email && password.length >= 6) {
-          const mockResponse: LoginResponse = {
-            token: 'mock_jwt_token_' + Date.now(),
-            user: {
-              id: '1',
-              username: email.split('@')[0],
-              email: email,
-              role: 'admin',
-              avatar: `https://ui-avatars.com/api/?name=${email.split('@')[0]}&background=667eea&color=fff`
-            }
-          };
-
-          // 保存token和用户信息
-          localStorage.setItem('auth_token', mockResponse.token);
-          localStorage.setItem('current_user', JSON.stringify(mockResponse.user));
-
-          this.currentUser.set(mockResponse.user);
-          this.isLoggedIn.set(true);
-
-          observer.next(mockResponse);
-          observer.complete();
-        } else {
-          observer.error({ message: '邮箱或密码不正确' });
-        }
-      }, 1000); // 模拟网络延迟
-    });
-
-    /* 真实API调用（取消注释以使用）
-    return this.http.post<LoginResponse>('/api/auth/login', { email, password })
-      .pipe(
-        tap(response => {
-          localStorage.setItem('auth_token', response.token);
-          localStorage.setItem('current_user', JSON.stringify(response.user));
-
-          this.currentUser.set(response.user);
-          this.isLoggedIn.set(true);
-        })
-      );
-    */
+  login(loginData: LoginRequest): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/login`, loginData).pipe(
+      tap((response) => this.handleAuthResponse(response)),
+      catchError(this.handleError)
+    );
   }
-  
+
   /**
-   * 登出
+   * 用户登出
    */
   logout(): void {
-    this.clearAuth();
+    localStorage.removeItem(this.ACCESS_TOKEN_KEY);
+    localStorage.removeItem(this.REFRESH_TOKEN_KEY);
+    localStorage.removeItem(this.USER_KEY);
+
+    this.currentUser.set(null);
+    this.currentUserSubject.next(null);
+
     this.router.navigate(['/login']);
   }
-  
+
   /**
-   * 清除认证信息
+   * 刷新 access token
    */
-  private clearAuth(): void {
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('current_user');
-    this.currentUser.set(null);
-    this.isLoggedIn.set(false);
+  refreshToken(): Observable<{ accessToken: string }> {
+    const refreshToken = this.getRefreshToken();
+
+    if (!refreshToken) {
+      return throwError(() => new Error('No refresh token available'));
+    }
+
+    return this.http.post<{ accessToken: string }>(`${this.apiUrl}/auth/refresh`, {
+      refreshToken,
+    }).pipe(
+      tap((response) => {
+        this.setAccessToken(response.accessToken);
+      }),
+      catchError((error) => {
+        this.logout();
+        return throwError(() => error);
+      })
+    );
   }
-  
+
   /**
-   * 检查是否已认证
+   * 获取当前用户信息
    */
-  isAuthenticated(): boolean {
-    return this.isLoggedIn();
+  getCurrentUserInfo(): Observable<User> {
+    return this.http.get<User>(`${this.apiUrl}/auth/me`).pipe(
+      tap((user) => {
+        this.currentUser.set(user);
+        this.currentUserSubject.next(user);
+        this.setUser(user);
+      }),
+      catchError(this.handleError)
+    );
   }
-  
+
   /**
-   * 获取当前用户
+   * 获取 access token
    */
-  getCurrentUser(): User | null {
-    return this.currentUser();
+  getAccessToken(): string | null {
+    return localStorage.getItem(this.ACCESS_TOKEN_KEY);
   }
-  
+
   /**
-   * 获取用户角色
+   * 获取 refresh token
    */
-  getUserRole(): string {
-    return this.currentUser()?.role || '';
+  getRefreshToken(): string | null {
+    return localStorage.getItem(this.REFRESH_TOKEN_KEY);
   }
-  
+
   /**
-   * 获取Token
+   * 检查 token 是否过期
    */
-  getToken(): string | null {
-    return localStorage.getItem('auth_token');
+  isTokenExpired(token?: string): boolean {
+    if (!token) {
+      token = this.getAccessToken() || undefined;
+    }
+
+    if (!token) {
+      return true;
+    }
+
+    try {
+      const payload = this.decodeToken(token);
+      const currentTime = Math.floor(Date.now() / 1000);
+      return payload.exp < currentTime;
+    } catch (error) {
+      return true;
+    }
   }
-  
+
   /**
-   * 刷新Token
+   * 解码 JWT token
    */
-  refreshToken(): Observable<{ token: string }> {
-    return this.http.post<{ token: string }>('/api/auth/refresh', {})
-      .pipe(
-        tap(response => {
-          localStorage.setItem('auth_token', response.token);
-        })
-      );
+  decodeToken(token: string): TokenPayload {
+    const parts = token.split('.');
+    if (parts.length !== 3) {
+      throw new Error('Invalid token format');
+    }
+
+    const payload = parts[1];
+    const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+    return JSON.parse(decoded);
   }
-  
+
   /**
-   * 注册
+   * 处理认证响应
    */
-  register(data: {
-    username: string;
-    email: string;
-    password: string;
-  }): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>('/api/auth/register', data)
-      .pipe(
-        tap(response => {
-          localStorage.setItem('auth_token', response.token);
-          localStorage.setItem('current_user', JSON.stringify(response.user));
-          
-          this.currentUser.set(response.user);
-          this.isLoggedIn.set(true);
-        })
-      );
+  private handleAuthResponse(response: AuthResponse): void {
+    this.setAccessToken(response.accessToken);
+    this.setRefreshToken(response.refreshToken);
+    this.setUser(response.user);
+    this.currentUser.set(response.user);
+    this.currentUserSubject.next(response.user);
+  }
+
+  private setAccessToken(token: string): void {
+    localStorage.setItem(this.ACCESS_TOKEN_KEY, token);
+  }
+
+  private setRefreshToken(token: string): void {
+    localStorage.setItem(this.REFRESH_TOKEN_KEY, token);
+  }
+
+  private setUser(user: User): void {
+    localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+  }
+
+  private getUserFromStorage(): User | null {
+    const userStr = localStorage.getItem(this.USER_KEY);
+    if (!userStr) {
+      return null;
+    }
+
+    try {
+      return JSON.parse(userStr);
+    } catch (error) {
+      return null;
+    }
+  }
+
+  private handleError(error: HttpErrorResponse): Observable<never> {
+    let errorMessage = '发生未知错误';
+
+    if (error.error instanceof ErrorEvent) {
+      errorMessage = `错误: ${error.error.message}`;
+    } else {
+      errorMessage = error.error?.message || error.error?.error || `服务器错误 (${error.status})`;
+    }
+
+    console.error('Auth错误:', error);
+    return throwError(() => new Error(errorMessage));
   }
 }

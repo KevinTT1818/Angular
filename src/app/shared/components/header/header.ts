@@ -16,7 +16,7 @@ export class Header {
   isMenuOpen = false;
 
   // 从AuthService获取登录状态和用户信息
-  isLoggedIn = this.authService.isLoggedIn;
+  isLoggedIn = this.authService.isAuthenticated;
   currentUser = this.authService.currentUser;
 
   toggleMenu(): void {

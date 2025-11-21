@@ -122,9 +122,85 @@ export const environment = {
 
 ### 文件上传
 
-| 方法 | 端点 | 说明 | Content-Type |
-|------|------|------|--------------|
-| POST | `/api/upload/image` | 上传图片 | multipart/form-data |
+| 方法 | 端点 | 说明 | 认证 | Content-Type |
+|------|------|------|------|--------------|
+| POST | `/api/upload/image` | 上传博客封面图片 | 需要JWT | multipart/form-data |
+
+**请求参数：**
+- `file`: 图片文件（字段名必须为 `file`）
+
+**文件限制：**
+- 最大文件大小: 5MB
+- 支持格式: JPG, PNG, GIF, WebP
+- 需要 JWT Token 认证
+
+**响应示例：**
+```json
+{
+  "filename": "a1b2c3d4-e5f6-7890-abcd-ef1234567890.jpg",
+  "originalName": "my-image.jpg",
+  "mimetype": "image/jpeg",
+  "size": 102400,
+  "url": "http://localhost:3000/uploads/images/a1b2c3d4-e5f6-7890-abcd-ef1234567890.jpg",
+  "message": "图片上传成功"
+}
+```
+
+**cURL 测试示例：**
+```bash
+curl -X POST http://localhost:3000/api/upload/image \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -F "file=@/path/to/image.jpg"
+```
+
+### 评论相关
+
+| 方法 | 端点 | 说明 | 认证 |
+|------|------|------|------|
+| POST | `/api/comments` | 创建评论 | 需要JWT |
+| GET | `/api/comments/blog/:blogId` | 获取博客的评论列表 | - |
+| GET | `/api/comments/:id` | 获取评论详情 | - |
+| PATCH | `/api/comments/:id` | 更新评论 | 需要JWT |
+| DELETE | `/api/comments/:id` | 删除评论 | 需要JWT |
+
+**创建评论请求体：**
+```json
+{
+  "content": "评论内容",
+  "blogId": "blog-uuid",
+  "parentId": "parent-comment-uuid"  // 可选，用于回复评论
+}
+```
+
+**获取评论列表查询参数：**
+- `page`: 页码 (默认: 1)
+- `limit`: 每页数量 (默认: 20)
+
+**评论响应示例：**
+```json
+{
+  "id": "comment-uuid",
+  "content": "评论内容",
+  "blogId": "blog-uuid",
+  "authorId": "user-uuid",
+  "parentId": null,
+  "author": {
+    "id": "user-uuid",
+    "name": "用户名",
+    "email": "user@example.com",
+    "avatar": "avatar-url"
+  },
+  "replies": [
+    {
+      "id": "reply-uuid",
+      "content": "回复内容",
+      "author": { ... }
+    }
+  ],
+  "createdAt": "2025-11-20T08:00:00Z",
+  "updatedAt": "2025-11-20T08:00:00Z"
+}
+```
 
 ### 认证相关
 

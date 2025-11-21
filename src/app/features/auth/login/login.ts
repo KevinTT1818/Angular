@@ -42,7 +42,7 @@ export class LoginComponent {
 
     const { email, password } = this.loginForm.value;
 
-    this.authService.login(email, password).subscribe({
+    this.authService.login({ email, password }).subscribe({
       next: (response) => {
         this.isLoading.set(false);
         // 登录成功，跳转到主页
@@ -101,8 +101,8 @@ export class LoginComponent {
    */
   demoLogin(): void {
     this.loginForm.patchValue({
-      email: 'demo@example.com',
-      password: 'demo123456'
+      email: 'admin@blog.com',
+      password: 'password123'
     });
     this.onSubmit();
   }

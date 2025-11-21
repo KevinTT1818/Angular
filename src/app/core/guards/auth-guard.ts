@@ -22,21 +22,21 @@ export const authGuard: CanActivateFn = (route, state) => {
 /**
  * 角色守卫 - 检查用户角色
  */
-export const roleGuard: (allowedRoles: string[]) => CanActivateFn = 
+export const roleGuard: (allowedRoles: string[]) => CanActivateFn =
   (allowedRoles: string[]) => (route, state) => {
     const authService = inject(AuthService);
     const router = inject(Router);
-    
+
     if (!authService.isAuthenticated()) {
       return router.createUrlTree(['/login']);
     }
-    
-    const userRole = authService.getUserRole();
-    
-    if (allowedRoles.includes(userRole)) {
+
+    const userRole = authService.currentUser()?.role;
+
+    if (userRole && allowedRoles.includes(userRole)) {
       return true;
     }
-    
+
     // 权限不足，重定向到首页
     return router.createUrlTree(['/']);
   };

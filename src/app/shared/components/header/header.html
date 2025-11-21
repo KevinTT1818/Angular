@@ -43,7 +43,7 @@
 
           <div class="user-menu">
             @if (currentUser()?.avatar) {
-              <img [src]="currentUser()?.avatar" [alt]="currentUser()?.username" class="user-avatar">
+              <img [src]="currentUser()?.avatar" [alt]="currentUser()?.name" class="user-avatar">
             }
             <button class="logout-btn" (click)="logout()" type="button">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">

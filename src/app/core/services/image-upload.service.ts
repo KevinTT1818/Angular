@@ -189,14 +189,14 @@ export class ImageUploadService {
    */
   private async uploadToAPI(blob: Blob, fileName: string): Promise<UploadResult> {
     const formData = new FormData();
-    formData.append('image', blob, fileName);
+    formData.append('file', blob, fileName);
 
     const url = `${environment.apiUrl}${environment.endpoints.uploadImage}`;
 
     // 如果启用了认证，从localStorage获取token
     const headers: HeadersInit = {};
     if (environment.enableAuth) {
-      const token = localStorage.getItem('auth_token');
+      const token = localStorage.getItem('access_token');
       if (token) {
         headers['Authorization'] = `Bearer ${token}`;
       }
@@ -210,18 +210,20 @@ export class ImageUploadService {
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ message: '上传失败' }));
-      throw new Error(error.message || '上传失败');
+      // 后端返回的错误信息可能在 message 或 error 字段中
+      const errorMsg = error.message || error.error || `上传失败 (${response.status})`;
+      throw new Error(errorMsg);
     }
 
     const data = await response.json();
 
-    // 适配不同的API响应格式
+    // 适配后端响应格式 (NestJS 直接返回对象，不包装在 data 字段中)
     return {
-      url: data.data?.url || data.url,
-      fileName: data.data?.fileName || data.fileName || fileName,
-      size: blob.size,
-      width: data.data?.width || data.width,
-      height: data.data?.height || data.height
+      url: data.url || data.data?.url,
+      fileName: data.filename || data.fileName || data.data?.fileName || fileName,
+      size: data.size || blob.size,
+      width: data.width || data.data?.width,
+      height: data.height || data.data?.height
     };
   }
 
