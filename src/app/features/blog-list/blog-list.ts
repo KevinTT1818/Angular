@@ -4,9 +4,7 @@ import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { BlogService } from '../../core/services/blog.service';
 import { SeoService } from '../../core/services/seo.service';
 import { Blog, Category } from '../../core/models/blog/blog-module';
-import { ExcerptPipe } from '../../shared/pipes/excerpt-pipe'
-import { DateFormatPipe } from '../../shared/pipes/date-format-pipe';
-import { SearchBar } from '../../shared/components/search-bar/search-bar';
+import { ExcerptPipe } from '../../shared/pipes/excerpt-pipe';
 
 @Component({
   selector: 'app-blog-list',
@@ -14,9 +12,7 @@ import { SearchBar } from '../../shared/components/search-bar/search-bar';
   imports: [
     CommonModule,
     RouterModule,
-    ExcerptPipe,
-    DateFormatPipe,
-    SearchBar
+    ExcerptPipe
   ],
   templateUrl: './blog-list.html',
   styleUrls: ['./blog-list.scss']

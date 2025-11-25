@@ -1,93 +1,94 @@
 <div class="home-container">
-  <!-- Hero区域 -->
-  <section class="hero">
-    <div class="container">
-      <h1 class="hero-title">欢迎来到我的博客</h1>
-      <p class="hero-subtitle">分享技术知识，记录成长历程</p>
-      <div class="hero-actions">
-        <a routerLink="/blogs" class="btn btn-primary">浏览文章</a>
-        <a routerLink="/about" class="btn btn-secondary">关于我</a>
-      </div>
+  @if (isLoading()) {
+    <div class="loading-screen">
+      <div class="spinner"></div>
+      <p>加载中...</p>
     </div>
-  </section>
+  } @else {
+    <!-- Featured Article Hero Section -->
+    @if (featuredBlog()) {
+      <section class="featured-hero">
+        <div class="featured-container">
+          <div class="featured-sidebar">
+            <h2 class="editor-selection-title">EDITOR'S SELECTION</h2>
+            <div class="feature-articles">
+              @for (blog of latestBlogs().slice(1, 4); track blog.id) {
+                <div class="feature-article-item" [routerLink]="['/blog', blog.id]">
+                  <span class="feature-category">{{ blog.category.name }}</span>
+                  <h4>{{ blog.title }}</h4>
+                </div>
+              }
+            </div>
+          </div>
 
-  <!-- 最新文章 - 轮播图 -->
-  <section class="latest-posts">
-    <div class="container">
-      <h2 class="section-title">最新文章</h2>
-
-      @if (isLoading()) {
-        <div class="loading">加载中...</div>
-      } @else {
-        <div class="carousel-wrapper">
-          <swiper-container
-            #swiperContainer
-            [slidesPerView]="1"
-            [spaceBetween]="30"
-            [loop]="false"
-            [rewind]="true"
-            [autoplay]="swiperConfig.autoplay"
-            [pagination]="swiperConfig.pagination"
-            [navigation]="true"
-            [breakpoints]="swiperConfig.breakpoints"
-            class="blog-carousel">
-            @for (blog of latestBlogs(); track blog.id) {
-              <swiper-slide>
-                <article class="blog-card" [routerLink]="['/blog', blog.id]">
-                  @if (blog.coverImage) {
-                    <div class="card-image-wrapper">
-                      <img
-                        [src]="blog.coverImage"
-                        [alt]="blog.title"
-                        (error)="onImageError($event)"
-                        class="card-image"
-                        loading="lazy">
-                      <div class="image-overlay"></div>
-                    </div>
+          <article class="featured-article" [routerLink]="['/blog', featuredBlog()!.id]">
+            <div class="featured-image">
+              <img
+                [src]="featuredBlog()!.coverImage"
+                [alt]="featuredBlog()!.title"
+                (error)="onImageError($event)"
+                loading="eager">
+              <div class="featured-overlay"></div>
+            </div>
+            <div class="featured-content">
+              <span class="featured-category">{{ featuredBlog()!.category.name }}</span>
+              <span class="featured-tag"># {{ featuredBlog()!.category.name }}</span>
+              <h1 class="featured-title">{{ featuredBlog()!.title }}</h1>
+              <p class="featured-excerpt">{{ featuredBlog()!.excerpt }}</p>
+              <div class="featured-meta">
+                <div class="author-info">
+                  @if (featuredBlog()!.authorAvatar) {
+                    <img [src]="featuredBlog()!.authorAvatar" [alt]="featuredBlog()!.author" class="author-avatar">
                   }
-                  <div class="card-content">
-                    <span class="category">{{ blog.category.name }}</span>
-                    <h3>{{ blog.title }}</h3>
-                    <p>{{ blog.excerpt }}</p>
-                    <div class="card-meta">
-                      <span>📅 {{ blog.publishedAt | date:'yyyy-MM-dd' }}</span>
-                      <span>👁️ {{ blog.viewCount }}</span>
-                      <span>❤️ {{ blog.likeCount }}</span>
-                    </div>
+                  <span class="author-name">{{ featuredBlog()!.author }}</span>
+                </div>
+                <span class="publish-date">shared on {{ featuredBlog()!.publishedAt | date:'MMM dd, yyyy' }}</span>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+    }
+
+    <!-- Article Cards Grid -->
+    <section class="articles-section">
+      <div class="articles-container">
+        <div class="articles-grid">
+          @for (blog of latestBlogs().slice(4); track blog.id) {
+            <article class="article-card" [routerLink]="['/blog', blog.id]">
+              <div class="card-image">
+                <img
+                  [src]="blog.coverImage"
+                  [alt]="blog.title"
+                  (error)="onImageError($event)"
+                  loading="lazy">
+                <div class="card-overlay"></div>
+              </div>
+              <div class="card-body">
+                <div class="card-header">
+                  <span class="card-category">{{ blog.category.name }}</span>
+                  <span class="card-tag"># {{ blog.category.name }}</span>
+                </div>
+                <h3 class="card-title">{{ blog.title }}</h3>
+                <p class="card-description">{{ blog.excerpt }}</p>
+                <div class="card-footer">
+                  <div class="card-author">
+                    @if (blog.authorAvatar) {
+                      <img [src]="blog.authorAvatar" [alt]="blog.author">
+                    }
+                    <span>{{ blog.author }}</span>
                   </div>
-                </article>
-              </swiper-slide>
-            }
-          </swiper-container>
+                  <span class="card-date">shared on {{ blog.publishedAt | date:'MMM dd, yyyy' }}</span>
+                </div>
+              </div>
+            </article>
+          }
         </div>
-      }
 
-      <div class="text-center">
-        <a routerLink="/blogs" class="btn btn-outline">查看更多</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- 特色区域 -->
-  <section class="features">
-    <div class="container">
-      <div class="feature-grid">
-        <div class="feature-item">
-          <div class="feature-icon">📝</div>
-          <h3>技术分享</h3>
-          <p>分享前端、后端、DevOps等技术文章</p>
-        </div>
-        <div class="feature-item">
-          <div class="feature-icon">💡</div>
-          <h3>项目实战</h3>
-          <p>记录实际项目开发经验和解决方案</p>
-        </div>
-        <div class="feature-item">
-          <div class="feature-icon">🚀</div>
-          <h3>持续学习</h3>
-          <p>保持学习热情，不断提升技术能力</p>
+        <div class="view-more-section">
+          <button class="view-more-btn" routerLink="/blogs">查看更多文章</button>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
+  }
 </div>

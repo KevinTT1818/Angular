@@ -1,5 +1,5 @@
 .main-content {
-  min-height: calc(100vh - 64px);
+  min-height: calc(100vh - 70px);
   position: relative;
 
   // 美丽的渐变背景
@@ -14,24 +14,14 @@
   background-size: 400% 400%;
   animation: gradientShift 15s ease infinite;
 
-  // 添加一层半透明覆盖，使内容更易读
-  &::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(10px);
-    z-index: -1;
-    pointer-events: none;
-  }
-
-  // 确保内容在覆盖层之上
+  // 确保内容在背景之上
   router-outlet + * {
     position: relative;
     z-index: 1;
+  }
+
+  @media (max-width: 576px) {
+    min-height: calc(100vh - 60px);
   }
 }
 

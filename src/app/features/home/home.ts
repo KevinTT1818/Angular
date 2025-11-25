@@ -22,6 +22,7 @@ export class HomeComponent implements OnInit {
   private seoService = inject(SeoService);
 
   latestBlogs = signal<Blog[]>([]);
+  featuredBlog = signal<Blog | null>(null);
   isLoading = signal(false);
 
   // Swiper 配置
@@ -73,10 +74,14 @@ export class HomeComponent implements OnInit {
   loadLatestBlogs(): void {
     this.isLoading.set(true);
 
-    // 加载 9 篇最新文章，确保有足够的 slides 支持 loop 模式
-    this.blogService.getRecentBlogs(9).subscribe({
+    // 加载 12 篇最新文章
+    this.blogService.getRecentBlogs(12).subscribe({
       next: (blogs) => {
         this.latestBlogs.set(blogs);
+        // 第一篇作为特色文章
+        if (blogs.length > 0) {
+          this.featuredBlog.set(blogs[0]);
+        }
         this.isLoading.set(false);
       },
       error: (error) => {

@@ -69,7 +69,7 @@ interface Snowflake {
 })
 export class SnowflakeComponent implements OnInit, OnDestroy {
   snowflakes: Snowflake[] = [];
-  private readonly SNOWFLAKE_COUNT = 30; // 降低数量以提升性能
+  private readonly SNOWFLAKE_COUNT = 35; // 降低数量以提升性能
   private intervalId?: number;
   private routerSubscription?: Subscription;
   private isDestroyed = false;

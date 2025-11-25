@@ -1,8 +1,14 @@
 /* You can add global styles to this file, and also import other style files */
 
-// Angular Material 主题 - Material 3 API
 // 注意: @use 必须在所有其他规则之前
+// Angular Material 主题 - Material 3 API
 @use '@angular/material' as mat;
+
+// Swiper 样式
+@use 'swiper/css' as swiper;
+@use 'swiper/css/navigation' as swiper-nav;
+@use 'swiper/css/pagination' as swiper-pagination;
+@use 'swiper/css/autoplay' as swiper-autoplay;
 
 // Material 3 主题配置
 $blog-theme: mat.define-theme((
@@ -17,12 +23,6 @@ $blog-theme: mat.define-theme((
 :root {
   @include mat.all-component-themes($blog-theme);
 }
-
-// Swiper 样式
-@import 'swiper/css';
-@import 'swiper/css/navigation';
-@import 'swiper/css/pagination';
-@import 'swiper/css/autoplay';
 
 // 自定义全局样式
 * {

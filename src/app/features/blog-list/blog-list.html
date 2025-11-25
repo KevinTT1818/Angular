@@ -1,342 +1,204 @@
-<div class="blog-list-container">
-  <!-- 头部搜索区 -->
-  <div class="blog-header">
-    <div class="container">
-      <div class="header-top">
-        <div class="header-text">
-          <h1>技术博客</h1>
-          <p class="subtitle">分享编程知识与开发经验</p>
-        </div>
-      </div>
-
-      <!-- 搜索和筛选区域 -->
-      <div class="search-filter-wrapper">
-        <!-- 搜索框 -->
-        <div class="search-section">
-          <app-search-bar
-            [placeholder]="'搜索博客标题、内容...'"
-            [initialValue]="searchQuery()"
-            (search)="onSearch($event)"
-            (clear)="onClearSearch()">
-          </app-search-bar>
-        </div>
-
-        <!-- 快捷筛选栏 -->
-        <div class="quick-filters">
-          <!-- 排序选择 -->
-          <div class="filter-group">
-            <label class="filter-label">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M7 2v10M7 12l-3-3M7 12l3-3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-              排序
-            </label>
-            <select class="filter-select" [value]="sortBy()" (change)="onSortChange($event)">
-              <option value="latest">最新发布</option>
-              <option value="popular">最热门</option>
-              <option value="title">标题 A-Z</option>
-            </select>
-          </div>
-
-          <!-- 分类选择 -->
-          <div class="filter-group">
-            <label class="filter-label">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M2 2h4v4H2V2zM8 2h4v4H8V2zM2 8h4v4H2V8z" stroke="currentColor" stroke-width="1.5"/>
-              </svg>
-              分类
-            </label>
-            <select class="filter-select" [value]="selectedCategory() || ''" (change)="onCategoryChange($event)">
-              <option value="">全部分类</option>
-              @for (category of categories(); track category.id) {
-                <option [value]="category.id">{{ category.name }}</option>
-              }
-            </select>
-          </div>
-
-          <!-- 更多筛选按钮 -->
-          <button class="more-filters-btn" (click)="toggleAdvancedFilters()" type="button">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M2 4h12M5 8h6M7 12h2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-            更多筛选
-            @if (selectedTags().length > 0) {
-              <span class="filter-count">{{ selectedTags().length }}</span>
-            }
-          </button>
-
-          <!-- 清除筛选 -->
-          @if (hasActiveFilters()) {
-            <button class="clear-filters-btn" (click)="clearFilters()" type="button">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M10 4L4 10M4 4l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-              清除
-            </button>
-          }
-        </div>
-
-        <!-- 高级筛选面板 -->
-        @if (showAdvancedFilters()) {
-          <div class="advanced-filters">
-            <div class="advanced-filters-header">
-              <h3>标签筛选</h3>
-              <button class="close-btn" (click)="toggleAdvancedFilters()" type="button">
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M12 4L4 12M4 4l8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-              </button>
-            </div>
-            <div class="tags-filter">
-              @for (tag of availableTags(); track tag) {
-                <button
-                  class="tag-chip"
-                  [class.active]="selectedTags().includes(tag)"
-                  (click)="selectTag(tag)"
-                  type="button">
-                  #{{ tag }}
-                  @if (selectedTags().includes(tag)) {
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                      <path d="M9 3L5 7l-2-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
-                  }
-                </button>
-              }
-            </div>
-          </div>
-        }
-      </div>
+<div class="blog-list-page">
+  <!-- Category Filter Tabs -->
+  <section class="filter-tabs-section">
+    <div class="tabs-container">
+      <button
+        class="filter-tab"
+        [class.active]="!selectedCategory()"
+        (click)="selectCategory(undefined)">
+        All
+      </button>
+      @for (category of categories(); track category.id) {
+        <button
+          class="filter-tab"
+          [class.active]="selectedCategory() === category.id"
+          (click)="selectCategory(category.id)">
+          {{ category.name }}
+          <span class="tab-count">{{ category.blogCount }}</span>
+        </button>
+      }
+      <button class="more-filters-btn" (click)="toggleAdvancedFilters()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <circle cx="8" cy="8" r="1" fill="currentColor"/>
+          <circle cx="8" cy="4" r="1" fill="currentColor"/>
+          <circle cx="8" cy="12" r="1" fill="currentColor"/>
+        </svg>
+      </button>
     </div>
-  </div>
-  
-  <div class="container main-content">
-    <div class="content-wrapper">
-      <!-- 左侧：博客列表 -->
-      <div class="blog-list-section">
-        <!-- 筛选条件显示 -->
-        @if (hasActiveFilters()) {
-          <div class="filter-badge">
-            <span>当前筛选：</span>
-            @if (searchQuery()) {
-              <span class="badge">
-                搜索: {{ searchQuery() }}
-                <button (click)="onClearSearch()">✕</button>
-              </span>
-            }
-            @if (selectedCategory()) {
-              <span class="badge">
-                {{ getCategoryName(selectedCategory()!) }}
-                <button (click)="selectCategory(undefined)">✕</button>
-              </span>
-            }
-            @for (tag of selectedTags(); track tag) {
-              <span class="badge">
-                #{{ tag }}
-                <button (click)="selectTag(tag)">✕</button>
-              </span>
-            }
-            @if (sortBy() !== 'latest') {
-              <span class="badge">
-                排序: {{ sortBy() === 'popular' ? '最热' : '标题' }}
-                <button (click)="sortBy.set('latest'); updateUrlParams()">✕</button>
-              </span>
-            }
-            <button (click)="clearFilters()" class="clear-all">清除所有</button>
-          </div>
-        }
-        
-        <!-- 加载状态 -->
+  </section>
+
+  <!-- Main Content Area -->
+  <div class="main-container">
+    <div class="content-grid">
+      <!-- Blog Cards Grid -->
+      <section class="blog-grid-section">
         @if (isLoading()) {
-          <div class="loading">
+          <div class="loading-state">
             <div class="spinner"></div>
-            <p>加载中...</p>
+            <p>Loading articles...</p>
           </div>
-        }
-        
-        <!-- 博客卡片列表 -->
-        @if (!isLoading() && hasBlogs()) {
-          <div class="blog-cards">
+        } @else if (hasBlogs()) {
+          <div class="blog-grid">
             @for (blog of blogs(); track blog.id) {
-              <article class="blog-card" (click)="viewBlog(blog.id)">
-                <!-- 封面图 -->
-                @if (blog.coverImage) {
-                  <div class="blog-cover">
-                    <img
-                      [src]="blog.coverImage"
-                      [alt]="blog.title"
-                      (error)="onImageError($event)"
-                      loading="lazy">
-                    @if (!blog.isPublished) {
-                      <span class="draft-badge">草稿</span>
-                    }
-                  </div>
-                }
-                
-                <div class="blog-content">
-                  <!-- 分类标签 -->
+              <article class="blog-card" [routerLink]="['/blog', blog.id]">
+                <div class="blog-cover">
+                  <img
+                    [src]="blog.coverImage"
+                    [alt]="blog.title"
+                    (error)="onImageError($event)"
+                    loading="lazy">
+                  <div class="cover-overlay"></div>
+                </div>
+                <div class="blog-info">
                   <div class="blog-meta-top">
-                    <span class="category-badge">
-                      {{ blog.category.name }}
-                    </span>
-                    <span class="date">
-                      {{ blog.publishedAt | dateFormat }}
-                    </span>
+                    <span class="category-badge">{{ blog.category.name }}</span>
+                    <span class="category-hash"># {{ blog.category.name }}</span>
                   </div>
-                  
-                  <!-- 标题 -->
-                  <h2 class="blog-title">{{ blog.title }}</h2>
-                  
-                  <!-- 摘要 -->
-                  <p class="blog-excerpt">
-                    {{ blog.excerpt | excerpt:150 }}
-                  </p>
-                  
-                  <!-- 标签 -->
-                  <div class="blog-tags">
-                    @for (tag of blog.tags; track tag) {
-                      <span
-                        class="tag"
-                        [class.active]="selectedTags().includes(tag)"
-                        (click)="selectTag(tag); $event.stopPropagation()">
-                        #{{ tag }}
-                      </span>
-                    }
-                  </div>
-                  
-                  <!-- 底部元信息 -->
+                  <h3 class="blog-title">{{ blog.title }}</h3>
+                  <p class="blog-excerpt">{{ blog.excerpt | excerpt:120 }}</p>
                   <div class="blog-meta-bottom">
-                    <div class="author-info">
+                    <div class="author-section">
                       @if (blog.authorAvatar) {
-                        <img [src]="blog.authorAvatar" [alt]="blog.author" class="avatar">
+                        <img [src]="blog.authorAvatar" [alt]="blog.author" class="author-avatar">
                       }
-                      <span>{{ blog.author }}</span>
+                      <span class="author-name">{{ blog.author }}</span>
                     </div>
-                    
-                    <div class="blog-stats">
-                      <span title="浏览量">
-                        👁️ {{ blog.viewCount }}
-                      </span>
-                      <span title="点赞数">
-                        ❤️ {{ blog.likeCount }}
-                      </span>
-                      <span title="评论数">
-                        💬 {{ blog.commentCount }}
-                      </span>
-                    </div>
+                    <span class="publish-date">shared on {{ blog.publishedAt | date:'MMM dd, yyyy' }}</span>
                   </div>
                 </div>
               </article>
             }
           </div>
-          
-          <!-- 分页 -->
+
+          <!-- Pagination -->
           @if (totalPages() > 1) {
             <div class="pagination">
-              <button 
+              <button
+                class="page-btn prev"
                 (click)="goToPage(currentPage() - 1)"
-                [disabled]="currentPage() === 1"
-                class="page-btn">
-                ← 上一页
+                [disabled]="currentPage() === 1">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M10 12L6 8l4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                Previous
               </button>
-              
-              @if (pages()[0] > 1) {
-                <button (click)="goToPage(1)" class="page-number">1</button>
-                @if (pages()[0] > 2) {
-                  <span class="ellipsis">...</span>
+
+              <div class="page-numbers">
+                @if (pages()[0] > 1) {
+                  <button (click)="goToPage(1)" class="page-num">1</button>
+                  @if (pages()[0] > 2) {
+                    <span class="ellipsis">...</span>
+                  }
                 }
-              }
-              
-              @for (page of pages(); track page) {
-                <button 
-                  (click)="goToPage(page)"
-                  [class.active]="page === currentPage()"
-                  class="page-number">
-                  {{ page }}
-                </button>
-              }
-              
-              @if (pages()[pages().length - 1] < totalPages()) {
-                @if (pages()[pages().length - 1] < totalPages() - 1) {
-                  <span class="ellipsis">...</span>
+
+                @for (page of pages(); track page) {
+                  <button
+                    (click)="goToPage(page)"
+                    [class.active]="page === currentPage()"
+                    class="page-num">
+                    {{ page }}
+                  </button>
                 }
-                <button (click)="goToPage(totalPages())" class="page-number">
-                  {{ totalPages() }}
-                </button>
-              }
-              
-              <button 
+
+                @if (pages()[pages().length - 1] < totalPages()) {
+                  @if (pages()[pages().length - 1] < totalPages() - 1) {
+                    <span class="ellipsis">...</span>
+                  }
+                  <button (click)="goToPage(totalPages())" class="page-num">
+                    {{ totalPages() }}
+                  </button>
+                }
+              </div>
+
+              <button
+                class="page-btn next"
                 (click)="goToPage(currentPage() + 1)"
-                [disabled]="currentPage() === totalPages()"
-                class="page-btn">
-                下一页 →
+                [disabled]="currentPage() === totalPages()">
+                Next
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M6 12l4-4-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
               </button>
             </div>
           }
-        }
-        
-        <!-- 空状态 -->
-        @if (!isLoading() && !hasBlogs()) {
+        } @else {
           <div class="empty-state">
             <div class="empty-icon">📝</div>
-            <h3>暂无博客</h3>
-            <p>还没有发布任何博客文章</p>
+            <h3>No articles found</h3>
+            <p>Try adjusting your filters or search terms</p>
+            @if (hasActiveFilters()) {
+              <button class="clear-btn" (click)="clearFilters()">Clear Filters</button>
+            }
           </div>
         }
-      </div>
-      
-      <!-- 右侧：侧边栏 -->
-      <aside class="sidebar">
-        <!-- 分类列表 -->
-        <div class="sidebar-card">
-          <h3 class="sidebar-title">📂 分类</h3>
-          <ul class="category-list">
-            <li
-              (click)="selectCategory(undefined)"
-              [class.active]="!selectedCategory()">
-              <span>全部</span>
-              <span class="count">{{ totalBlogs() }}</span>
-            </li>
-            @for (category of categories(); track category.id) {
-              <li
-                (click)="selectCategory(category.id)"
-                [class.active]="selectedCategory() === category.id">
-                <span>{{ category.name }}</span>
-                <span class="count">{{ category.blogCount }}</span>
-              </li>
-            }
-          </ul>
+      </section>
+
+      <!-- Profile Sidebar -->
+      <aside class="profile-sidebar">
+        <!-- Profile Card -->
+        <div class="profile-card">
+          <div class="profile-avatar">
+            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="Profile">
+          </div>
+          <h2 class="profile-name">花未眠</h2>
+          <p class="profile-bio">一个疯狂的coder</p>
+
+          <a href="https://github.com" target="_blank" class="github-link">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+            </svg>
+          </a>
+
+          <!-- Stats -->
+          <div class="profile-stats">
+            <div class="stat-item">
+              <span class="stat-value">{{ totalBlogs() }}</span>
+              <span class="stat-label">Articles</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value">5</span>
+              <span class="stat-label">talks</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value">{{ categories().length }}</span>
+              <span class="stat-label">Categories</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value">{{ availableTags().length }}</span>
+              <span class="stat-label">Tags</span>
+            </div>
+          </div>
         </div>
-        
-        <!-- 热门文章 -->
-        <div class="sidebar-card">
-          <h3 class="sidebar-title">🔥 热门文章</h3>
-          <ul class="popular-list">
-            @for (blog of popularBlogs(); track blog.id; let i = $index) {
-              <li (click)="viewBlog(blog.id)">
-                <span class="rank">{{ i + 1 }}</span>
-                <div class="popular-info">
-                  <h4>{{ blog.title }}</h4>
-                  <div class="popular-meta">
-                    <span>👁️ {{ blog.viewCount }}</span>
-                    <span>❤️ {{ blog.likeCount }}</span>
+
+        <!-- Recent Comments -->
+        <div class="recent-comments-card">
+          <h3 class="sidebar-title">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5z"/>
+            </svg>
+            RECENT COMMENTS
+          </h3>
+          <div class="comments-list">
+            @for (comment of [
+              {name: '사랑', date: '2023-6-25', count: 2},
+              {name: '사랑', date: '2023-6-25', count: 1},
+              {name: '사랑', date: '2023-6-25', count: 1}
+            ]; track comment.name + comment.date) {
+              <div class="comment-item">
+                <div class="comment-avatar">
+                  <img src="https://api.dicebear.com/7.x/avataaars/svg?seed={{comment.name}}" [alt]="comment.name">
+                </div>
+                <div class="comment-info">
+                  <div class="comment-header">
+                    <span class="comment-icon">💬</span>
+                    <span class="comment-name">{{ comment.name }}</span>
+                  </div>
+                  <div class="comment-meta">
+                    <span class="comment-date">{{ comment.date }}</span>
+                    <span class="comment-count">{{ comment.count }}</span>
                   </div>
                 </div>
-              </li>
-            }
-          </ul>
-        </div>
-        
-        <!-- 标签云 -->
-        <div class="sidebar-card">
-          <h3 class="sidebar-title">🏷️ 标签云</h3>
-          <div class="tag-cloud">
-            @for (tag of getAllTags(); track tag) {
-              <span
-                class="tag-item"
-                (click)="selectTag(tag)"
-                [class.active]="selectedTags().includes(tag)">
-                {{ tag }}
-              </span>
+              </div>
             }
           </div>
         </div>

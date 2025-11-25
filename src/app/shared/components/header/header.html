@@ -4,43 +4,42 @@
       <!-- Logo -->
       <div class="logo">
         <a routerLink="/home" class="logo-link">
-          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-            <rect width="32" height="32" rx="8" fill="url(#gradient)"/>
-            <path d="M16 8L20 14H12L16 8Z" fill="white"/>
-            <rect x="12" y="16" width="8" height="8" rx="2" fill="white"/>
-            <defs>
-              <linearGradient id="gradient" x1="0" y1="0" x2="32" y2="32">
-                <stop offset="0%" stop-color="#667eea"/>
-                <stop offset="100%" stop-color="#764ba2"/>
-              </linearGradient>
-            </defs>
-          </svg>
-          <span class="logo-text">我的博客</span>
+          <span class="logo-chinese">花未眠</span>
+          <span class="logo-english">HUAWEIMIAN</span>
         </a>
       </div>
 
       <!-- Navigation -->
       <nav class="nav" [class.nav-open]="isMenuOpen">
-        <a routerLink="/home" routerLinkActive="active" class="nav-link">首页</a>
-        <a routerLink="/dashboard" routerLinkActive="active" class="nav-link">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <rect x="1" y="1" width="6" height="6" rx="1" stroke="currentColor" stroke-width="2"/>
-            <rect x="9" y="1" width="6" height="6" rx="1" stroke="currentColor" stroke-width="2"/>
-            <rect x="1" y="9" width="6" height="6" rx="1" stroke="currentColor" stroke-width="2"/>
-            <rect x="9" y="9" width="6" height="6" rx="1" stroke="currentColor" stroke-width="2"/>
+        <a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link">HOME</a>
+        <a routerLink="/blogs" routerLinkActive="active" class="nav-link">TALKS</a>
+        <a routerLink="/about" routerLinkActive="active" class="nav-link">ABOUT</a>
+        <a routerLink="/archives" routerLinkActive="active" class="nav-link">ARCHIVES</a>
+        <a routerLink="/tags" routerLinkActive="active" class="nav-link">TAGS</a>
+        <a routerLink="/message" routerLinkActive="active" class="nav-link">MESSAGE</a>
+        <a routerLink="/friends" routerLinkActive="active" class="nav-link">FRIENDS</a>
+        <a routerLink="/photos" routerLinkActive="active" class="nav-link">PHOTOALBUMS</a>
+      </nav>
+
+      <!-- Right Actions -->
+      <div class="header-actions">
+        <!-- Search -->
+        <button class="action-btn" type="button" title="Search">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M9 17A8 8 0 1 0 9 1a8 8 0 0 0 0 16zM19 19l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          数据统计
-        </a>
-        <a routerLink="/blogs" routerLinkActive="active" class="nav-link">博客列表</a>
+        </button>
 
+        <!-- Language -->
+        <button class="action-btn lang-btn" type="button">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M10 1a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM1 10h18M10 1c2.5 3 2.5 7 0 9m0 0c-2.5-3-2.5-7 0-9m0 0v18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <span>EN</span>
+        </button>
+
+        <!-- Login/User -->
         @if (isLoggedIn()) {
-          <a routerLink="/admin/blogs/new" routerLinkActive="active" class="nav-link btn-primary">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-              <path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-            新建博客
-          </a>
-
           <div class="user-menu">
             @if (currentUser()?.avatar) {
               <img [src]="currentUser()?.avatar" [alt]="currentUser()?.name" class="user-avatar">
@@ -53,14 +52,22 @@
             </button>
           </div>
         } @else {
-          <a routerLink="/login" routerLinkActive="active" class="nav-link btn-secondary">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M10 14h3a1 1 0 001-1V3a1 1 0 00-1-1h-3M7 11l3-3-3-3M10 8H2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <a routerLink="/login" class="login-btn">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <path d="M12 14h3a1 1 0 001-1V3a1 1 0 00-1-1h-3M9 13l4-4-4-4M13 9H1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            登录
+            LOGIN
           </a>
         }
-      </nav>
+
+        <!-- Theme Toggle -->
+        <button class="action-btn theme-toggle" type="button" title="Toggle theme">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M10 3V1M10 19v-2M17 10h2M1 10h2M15.66 4.34l1.41-1.41M2.93 17.07l1.41-1.41M15.66 15.66l1.41 1.41M2.93 2.93l1.41 1.41" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
+          </svg>
+        </button>
+      </div>
 
       <!-- Mobile Menu Toggle -->
       <button class="menu-toggle" (click)="toggleMenu()" [attr.aria-label]="'菜单'">
