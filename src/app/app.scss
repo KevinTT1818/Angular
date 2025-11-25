@@ -1,5 +1,5 @@
 .main-content {
-  min-height: calc(100vh - 70px);
+  min-height: calc(100vh - 72px);
   position: relative;
 
   // 美丽的渐变背景
@@ -21,7 +21,7 @@
   }
 
   @media (max-width: 576px) {
-    min-height: calc(100vh - 60px);
+    min-height: calc(100vh - 64px);
   }
 }
 
