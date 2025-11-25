@@ -28,6 +28,8 @@ cd /Users/mac/Desktop/SoftWare/Project/Angular/blog-backend
 # 2. 确保 PostgreSQL 正在运行
 # macOS (Homebrew):
 brew services start postgresql
+brew services start postgresql@14
+brew services restart postgresql@14
 
 # 检查 PostgreSQL 状态
 brew services list | grep postgresql
